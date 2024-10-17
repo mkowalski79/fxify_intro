@@ -16,16 +16,21 @@ const parameters = {
 }
 
 
-//Scene
+
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
 const gui = new dat.GUI();
-const geometry = new THREE.SphereGeometry(3, 150, 150);
+
+//---------------------------------Objects/Materials----------------------
+const geometrySun = new THREE.SphereGeometry(3, 150, 150);
 const texSun = new THREE.TextureLoader().load('./texture/sun1.jpg');
 texSun.wrapT = THREE.RepeatWrapping;
 texSun.wrapS = THREE.RepeatWrapping;
 
-const texSunBump = new THREE.TextureLoader().load('./texture/sun1_bump.jpg');
+const geometryMoon = new THREE.SphereGeometry(1.2, 100, 100);
+
+
+const texSunBump = new THREE.TextureLoader().load('./texture/sun1_bump.png');
 texSunBump.wrapT = THREE.RepeatWrapping;
 texSunBump.wrapS = THREE.RepeatWrapping;
 
@@ -70,7 +75,7 @@ const materialSun = new THREE.MeshStandardMaterial({
   color: 0xFFFFFF,
   map: texSun,
   bumpMap: texSunBump,
-  bumpScale: .5,
+  bumpScale: .02,
   side: THREE.DoubleSide,
   //transparent: true,
   //opacity: 1.0,
@@ -84,7 +89,7 @@ const material1 = new THREE.MeshStandardMaterial({
   // blendAlpha: true,
   transparent: true,
   side: THREE.FrontSide,
-  opacity: .9,
+  opacity: .65,
   //bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
   // opacity: .3,
   //displacementMap: new THREE.TextureLoader().load('./texture/displacementMap.jpg'),
@@ -92,12 +97,33 @@ const material1 = new THREE.MeshStandardMaterial({
 });
 
 
-const sun1 = new THREE.Mesh(geometry, materialSun);
-const sun1_2 = new THREE.Mesh(geometry.clone(), material1.clone());
-const sun1_3 = new THREE.Mesh(geometry.clone(), material1.clone());
+const sun1 = new THREE.Mesh(geometrySun.clone(), materialSun.clone());
+const moon1 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
+moon1.position.x = -5.0;
+moon1.position.y = 2.0;
+moon1.position.z = -5.0;
+
+const moon2 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
+moon2.position.x = -2.0;
+moon2.position.y = 0.0;
+moon2.position.z = 4.0;
+moon2.scale.multiplyScalar(0.3);
+
+const moon3 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
+moon3.position.x = 1.2;
+moon3.position.y = 0.0;
+moon3.position.z = 5.0;
+moon3.scale.multiplyScalar(0.3);
+
+
+const sun1_2 = new THREE.Mesh(geometrySun.clone(), material1.clone());
+sun1_2.material.map.offset.x = .1; //starting position
+sun1_2.material.map.offset.y = -.15; //starting position
+
+const sun1_3 = new THREE.Mesh(geometrySun.clone(), material1.clone());
 sun1_3.material.map = texSun1_3;
-sun1_3.material.map.offset.x = .5;
-sun1_3.material.map.offset.y = .2;
+sun1_3.material.map.offset.x = .35;
+sun1_3.material.map.offset.y = -.2;
 sun1_2.scale.multiplyScalar(1.001);
 sun1_3.scale.multiplyScalar(1.002);
 
@@ -127,12 +153,15 @@ const materialGlow = new THREE.ShaderMaterial({
   transparent: true,
 });
 
-const sunGlow = new THREE.Mesh(geometry.clone(), materialGlow.clone());
+const sunGlow = new THREE.Mesh(geometrySun.clone(), materialGlow.clone());
 sunGlow.position.x = sun1.position.x;
 sunGlow.position.y = sun1.position.y;
 sunGlow.position.z = sun1.position.z;
 sunGlow.scale.multiplyScalar(1.3);
 
+sun1_2.position.x = sun1.position.x;
+sun1_2.position.y = sun1.position.y;
+sun1_2.position.z = sun1.position.z;
 sun1_2.material.needsUpdate = true;
 
 //---------------------------------------------------------------------------------------
@@ -198,32 +227,38 @@ window.addEventListener("resize", event => {
 
 
 scene.add(sun1);
+scene.add(moon1);
+scene.add(moon2);
+scene.add(moon3);
 scene.add(sunGlow);
-// scene.add(sun1_2);
-// scene.add(sun1_3);
+scene.add(sun1_2);
+//scene.add(sun1_3);
 scene.add(ambientLight);
 scene.add(directionalLight);
-
+const startTime = clock.getElapsedTime();
 //------------------------------------------------------------------
 //-----------------------Animate------------------------------------
 //------------------------------------------------------------------
 const animate = () => {
   const elapsedTime = clock.getElapsedTime();
 
+  // console.log(elapsedTime - startTime);
   //sphere.material.uniforms.u_time.value = elapsedTime;
   if (sun1) {
     sun1.rotation.y = elapsedTime * Math.PI / 100;
   }
-  // if(sun1_2){
-  //  // sun1_2.rotation.y = elapsedTime * Math.PI/100;
-  //   sun1_2.material.map.offset.x += .01;
-  //   //sun1_2.material.map.offset.y += .001;
-  // }
-  // if(sun1_3){
-  //   //sun1_3.rotation.y = elapsedTime * Math.PI/100;
-  //   sun1_3.material.map.offset.x -= .01;
-  //   //sun1_2.material.map.offset.y += .001;
-  // }
+  if ((elapsedTime - startTime > 6) && (elapsedTime - startTime < 9)) {
+    if (sun1_2) {
+      // sun1_2.rotation.y = elapsedTime * Math.PI/100;
+      sun1_2.material.map.offset.x += .0005;
+      sun1_2.material.map.offset.y += .001;
+    }
+    if (sun1_3) {
+      //sun1_3.rotation.y = elapsedTime * Math.PI/100;
+      sun1_3.material.map.offset.x -= .0005;
+      sun1_3.material.map.offset.y -= .0001;
+    }
+  }
 
   window.requestAnimationFrame(animate);
   renderer.render(scene, camera); //draw what the camera inside the scene captured
