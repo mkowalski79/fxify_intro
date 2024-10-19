@@ -6,6 +6,7 @@ import glowVertexShader from "./shaders/glowVertexShader.glsl";
 import glowFragmentShader from "./shaders/glowFragmentShader.glsl";
 
 import * as dat from "dat.gui";
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 
 //global params
@@ -49,7 +50,7 @@ const aspect = {
   height: window.innerHeight,
 };
 const camera = new THREE.PerspectiveCamera(45, aspect.width / aspect.height, .1, 1000);
-camera.position.z = 10;
+camera.position.z = 0.3;
 camera.position.y = 0;
 scene.add(camera);
 
@@ -97,19 +98,19 @@ const material1 = new THREE.MeshStandardMaterial({
 });
 
 
-const sun1 = new THREE.Mesh(geometrySun.clone(), materialSun.clone());
-const moon1 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
+let sun = new THREE.Mesh(geometrySun.clone(), materialSun.clone());
+let moon1 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
 moon1.position.x = -5.0;
 moon1.position.y = 2.0;
 moon1.position.z = -5.0;
 
-const moon2 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
+let moon2 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
 moon2.position.x = -2.0;
 moon2.position.y = 0.0;
 moon2.position.z = 4.0;
 moon2.scale.multiplyScalar(0.3);
 
-const moon3 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
+let moon3 = new THREE.Mesh(geometryMoon.clone(), materialSun.clone());
 moon3.position.x = 1.2;
 moon3.position.y = 0.0;
 moon3.position.z = 5.0;
@@ -153,15 +154,15 @@ const materialGlow = new THREE.ShaderMaterial({
   transparent: true,
 });
 
-const sunGlow = new THREE.Mesh(geometrySun.clone(), materialGlow.clone());
-sunGlow.position.x = sun1.position.x;
-sunGlow.position.y = sun1.position.y;
-sunGlow.position.z = sun1.position.z;
+let sunGlow = new THREE.Mesh(geometrySun.clone(), materialGlow.clone());
+sunGlow.position.x = sun.position.x;
+sunGlow.position.y = sun.position.y;
+sunGlow.position.z = sun.position.z;
 sunGlow.scale.multiplyScalar(1.3);
 
-sun1_2.position.x = sun1.position.x;
-sun1_2.position.y = sun1.position.y;
-sun1_2.position.z = sun1.position.z;
+sun1_2.position.x = sun.position.x;
+sun1_2.position.y = sun.position.y;
+sun1_2.position.z = sun.position.z;
 sun1_2.material.needsUpdate = true;
 
 //---------------------------------------------------------------------------------------
@@ -180,27 +181,16 @@ const directionalLight = new THREE.DirectionalLight("#ffffff", 1);
 directionalLight.position.set(0, 3.5, 3.5);
 
 //------------------------------------GUI---------------------------------------------
-gui
-  .add(directionalLight, "intensity")
-  .min(0)
-  .max(1)
-  .step(0.01)
-  .name("Directional Two");
+gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Two");
 gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
 gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
 gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
-
-var cGUI = gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").listen();
-cGUI.onChange(function (value) {
-  sunGlow.material.uniforms["c"].value = parameters.c;
-});
-
-var pGUI = gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").listen();
-pGUI.onChange(function (value) {
-  sunGlow.material.uniforms["p"].value = parameters.p;
-});
-
-
+gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").onChange(function (value) { sunGlow.material.uniforms["c"].value = parameters.c;});
+gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange(function (value) { sunGlow.material.uniforms["p"].value = parameters.p;});
+gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation X").onChange(function(value) { camera.rotation.x = value; });
+gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation y").onChange(function(value) { camera.rotation.y = value; });
+gui.add(camera.rotation, "z").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation z").onChange(function(value) { camera.rotation.z = value; });
+gui.add(camera.position, "z").min(-5).max(5).step(.05).name("position z").onChange(function(value) { camera.position.z = value; });
 // -------------------------------------Helpers------------------------------------
 const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight);
 scene.add(directionalLightHelper);
@@ -226,26 +216,96 @@ window.addEventListener("resize", event => {
 });
 
 
-scene.add(sun1);
-scene.add(moon1);
-scene.add(moon2);
-scene.add(moon3);
-scene.add(sunGlow);
-scene.add(sun1_2);
+// scene.add(sun1);
+// scene.add(moon1);
+// scene.add(moon2);
+// scene.add(moon3);
+// scene.add(sunGlow);
+// scene.add(sun1_2);
 //scene.add(sun1_3);
 scene.add(ambientLight);
 scene.add(directionalLight);
 const startTime = clock.getElapsedTime();
+
+//*******************************ANIMACJA */
+
+let action = null;
+let model = null;
+let mixer = null;
+let modelReady = false
+
+// Loading of model from  .glTF file
+const loader = new GLTFLoader();
+loader.load('model/spheres.gltf', (gltf) => {
+    model = gltf.scene;//.children[0]; //sun
+    model.scale.set(10, 10, 10);
+    // Ustawienie pozycji modelu
+    //model.position.set(player2.x - .2*2, player2.y - .5, player2.z+.002 * 2);
+    //model.position.set(player2.x - .2*2, player2.y - .5, -13);
+    //model.scale.set(25.0,25.0,25.0);
+    //model.position.z = -5.0;
+    // model.rotateY((Math.PI * 3)/4);
+    // Inicjalizacja animacji
+    mixer = new THREE.AnimationMixer(model);
+    model.userData.mixer = mixer;
+
+    sun = gltf.scene.children[0]; //sun
+    sun.castShadow = false;
+    sun.material = materialSun;
+
+    moon1 = gltf.scene.children[1]; //moon1
+    moon1.material = materialSun;
+    moon1.receiveShadow = false;
+
+    moon2 = gltf.scene.children[2]; //moon2
+    moon2.material = materialSun;
+    moon2.receiveShadow = false;
+    
+    sunGlow = gltf.scene.children[3]; //sunGlow
+    sunGlow.material = materialGlow;
+    sunGlow.castShadow = false;
+    sunGlow.receiveShadow = false;
+    sunGlow.scale.multiplyScalar(1.3);
+    if(gltf.animations.length > 0) {
+      action = mixer.clipAction(gltf.animations[0]);
+      if(action) 
+        action.play(); // Rozpoczęcie animacji
+    } 
+    scene.add(model);
+    // Tworzenie materiału
+    const customMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+
+    // // Znalezienie obiektu w załadowanym modelu
+    // karta = model.children[7].children[0]; // Załóżmy, że to jest właściwy obiekt
+    // //karta.scale.set(25.0,25.0,25.0);
+    // karta1 = model.children[7].children[1]; // Załóżmy, że to jest właściwy obiekt
+    // //karta1.scale.set(25.0,25.0,25.0);
+    // sceneJson = JSON.stringify(karta.geometry.attributes.position.array);
+    // document.getElementById('okno_json').innerHTML = sceneJson;
+  },
+  // called while loading is progressing
+function ( xhr ) {
+  console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+},
+// called when loading has errors
+function ( error ) {
+
+  console.log( 'An error happened' );
+
+}
+);
+
 //------------------------------------------------------------------
 //-----------------------Animate------------------------------------
 //------------------------------------------------------------------
+let ticks = 0;
 const animate = () => {
   const elapsedTime = clock.getElapsedTime();
 
   // console.log(elapsedTime - startTime);
   //sphere.material.uniforms.u_time.value = elapsedTime;
-  if (sun1) {
-    sun1.rotation.y = elapsedTime * Math.PI / 100;
+  if (sun) {
+    sun.rotation.y = elapsedTime * Math.PI / 100;
   }
   if ((elapsedTime - startTime > 6) && (elapsedTime - startTime < 9)) {
     if (sun1_2) {
@@ -258,6 +318,13 @@ const animate = () => {
       sun1_3.material.map.offset.x -= .0005;
       sun1_3.material.map.offset.y -= .0001;
     }
+  }
+
+
+  if (action !== null)  {
+    mixer.update(0.02)
+    //mixer.update(ticks);
+    //ticks+=0.0001;
   }
 
   window.requestAnimationFrame(animate);
