@@ -6,9 +6,7 @@ import glowVertexShader from "./shaders/glowVertexShader.glsl";
 import glowFragmentShader from "./shaders/glowFragmentShader.glsl";
 
 import * as dat from "dat.gui";
-import {
-  GLTFLoader
-} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 
 //global params
@@ -157,24 +155,12 @@ gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directiona
 gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
 gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
 gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
-gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").onChange(function (value) {
-  sunGlow.material.uniforms["c"].value = parameters.c;
-});
-gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange(function (value) {
-  sunGlow.material.uniforms["p"].value = parameters.p;
-});
-gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI / 100.0).name("rotation X").onChange(function (value) {
-  camera.rotation.x = value;
-});
-gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI / 100.0).name("rotation y").onChange(function (value) {
-  camera.rotation.y = value;
-});
-gui.add(camera.rotation, "z").min(-Math.PI).max(Math.PI).step(Math.PI / 100.0).name("rotation z").onChange(function (value) {
-  camera.rotation.z = value;
-});
-gui.add(camera.position, "z").min(-5).max(5).step(.05).name("position z").onChange(function (value) {
-  camera.position.z = value;
-});
+gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").onChange(function (value) { sunGlow.material.uniforms["c"].value = parameters.c;});
+gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange(function (value) { sunGlow.material.uniforms["p"].value = parameters.p;});
+gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation X").onChange(function(value) { camera.rotation.x = value; });
+gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation y").onChange(function(value) { camera.rotation.y = value; });
+gui.add(camera.rotation, "z").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation z").onChange(function(value) { camera.rotation.z = value; });
+gui.add(camera.position, "z").min(-5).max(5).step(.05).name("position z").onChange(function(value) { camera.position.z = value; });
 gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 // -------------------------------------Helpers------------------------------------
 const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight);
@@ -214,7 +200,7 @@ let mixer = null;
 // Loading of model from  .glTF file
 const loader = new GLTFLoader();
 loader.load('model/spheres.gltf', (gltf) => {
-    model = gltf.scene; //.children[0]; //sun
+    model = gltf.scene;//.children[0]; //sun
     model.scale.set(10, 10, 10);
     // Ustawienie pozycji modelu
     //model.position.z = -5.0;
@@ -225,39 +211,39 @@ loader.load('model/spheres.gltf', (gltf) => {
     sun = gltf.scene.children[0]; //sun
     sun.material.needsUpdate = true;
     //sun.material = materialSun;
-
+    
     moon1 = gltf.scene.children[1]; //moon1
     moon1.material.needsUpdate = true;
     //moon1.material = materialSun;
-
+    
     moon2 = gltf.scene.children[2]; //moon2
     moon2.material.needsUpdate = true;
     //moon2.material = materialSun;
-
+    
     sunGlow = gltf.scene.children[3]; //sunGlow
     sunGlow.material = materialGlow;
     sunGlow.scale.multiplyScalar(1.3);
     sunGlow.castShadow = false;
     sunGlow.receiveShadow = false;
-
+    
     moon3 = gltf.scene.children[4]; //moon3
     moon3.material.needsUpdate = true;
     //moon3.material = materialSun;
 
-    if (gltf.animations.length > 0) {
+    if(gltf.animations.length > 0) {
       action = mixer.clipAction(gltf.animations[0]);
-      if (action)
+      if(action) 
         action.play(); // Rozpoczęcie animacji
-    }
+    } 
     scene.add(model);
   },
   // called while loading is progressing
-  function (xhr) {
-    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+  function ( xhr ) {
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
   },
   // called when loading has errors
-  function (error) {
-    console.log('An error happened');
+  function ( error ) {
+    console.log( 'An error happened' );
   }
 );
 
@@ -269,7 +255,7 @@ const animate = () => {
   if (sun !== null) {
     sun.rotation.y = elapsedTime * Math.PI / 100;
   }
-  if (action !== null) {
+  if (action !== null)  {
     mixer.update(parameters.aniSpeed)
   }
 
