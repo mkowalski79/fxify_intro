@@ -2,8 +2,8 @@ import "./style.css";
 import * as THREE from "three";
 import vertexShader from "./shaders/vertex.glsl";
 import fragmentShader from "./shaders/fragment.glsl";
-import glowVertexShader from "./shaders/glowVertexShader.glsl";
-import glowFragmentShader from "./shaders/glowFragmentShader.glsl";
+import glowVertexShader from "./shaders/glowvertexshader.glsl";
+import glowFragmentShader from "./shaders/glowfragmentshader.glsl";
 
 import * as dat from "dat.gui";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
