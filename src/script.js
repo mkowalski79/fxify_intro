@@ -221,6 +221,7 @@ loader.load('model/spheres.gltf', (gltf) => {
     const matLCD = new THREE.MeshPhongMaterial({ color: 0x111111 });
     matLCD.reflectivity = .4;
     matLCD.shininess = .4;
+    
     phone.children[1].material.needsUpdate = true;  //phone case
     phone.children[0].material = matPhoneCase;
     phone.children[1].material = matLCD;
@@ -273,6 +274,8 @@ const animate = () => {
   }
   if (action !== null)  {
     mixer.update(parameters.aniSpeed)
+    //if(mixer.animate[0].time > 7.7)
+      
   }
 
   window.requestAnimationFrame(animate);
