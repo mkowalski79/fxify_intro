@@ -11,6 +11,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 //global params
 const parameters = {
+  fov: 26,
   c: 0.32,
   p: 3.5,
   ambientLight: 0.4,
@@ -25,6 +26,8 @@ const gui = new dat.GUI();
 
 //---------------------------------Objects/Materials----------------------
 
+let hand = null;
+let phone = null;
 let sun = null;
 let moon1 = null;
 let moon2 = null;
@@ -54,8 +57,8 @@ const aspect = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-const camera = new THREE.PerspectiveCamera(45, aspect.width / aspect.height, .1, 1000);
-camera.position.z = 0.3;
+const camera = new THREE.PerspectiveCamera(parameters.fov, aspect.width / aspect.height, .1, 1000);
+camera.position.z = 0.5;
 camera.position.y = 0;
 scene.add(camera);
 
@@ -161,6 +164,7 @@ gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).nam
 gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation y").onChange(function(value) { camera.rotation.y = value; });
 gui.add(camera.rotation, "z").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation z").onChange(function(value) { camera.rotation.z = value; });
 gui.add(camera.position, "z").min(-5).max(5).step(.05).name("position z").onChange(function(value) { camera.position.z = value; });
+gui.add(parameters, "fov").min(18).max(200).step(2).name("fov").onChange(function(value) { camera.fov = value; camera.updateProjectionMatrix(); });
 gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 // -------------------------------------Helpers------------------------------------
 const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight);
@@ -200,33 +204,46 @@ let mixer = null;
 // Loading of model from  .glTF file
 const loader = new GLTFLoader();
 loader.load('model/spheres.gltf', (gltf) => {
-    model = gltf.scene;//.children[0]; //sun
-    model.scale.set(10, 10, 10);
+    model = gltf.scene.children[0]; //sun
+    //model.scale.set(10, 10, 10);
     // Ustawienie pozycji modelu
     //model.position.z = -5.0;
     // Inicjalizacja animacji
     mixer = new THREE.AnimationMixer(model);
     model.userData.mixer = mixer;
 
-    sun = gltf.scene.children[0]; //sun
+    phone = model.children[0]; //phone object
+    phone.children[0].material.needsUpdate = true;  //LCD display
+    const matPhoneCase = new THREE.MeshPhongMaterial({ color: 0xAAAAAA });
+    matPhoneCase.reflectivity = 1.0;
+    matPhoneCase.shininess = .9;
+
+    const matLCD = new THREE.MeshPhongMaterial({ color: 0x111111 });
+    matLCD.reflectivity = .4;
+    matLCD.shininess = .4;
+    phone.children[1].material.needsUpdate = true;  //phone case
+    phone.children[0].material = matPhoneCase;
+    phone.children[1].material = matLCD;
+
+    sun = model.children[1]; //sun
     sun.material.needsUpdate = true;
     //sun.material = materialSun;
     
-    moon1 = gltf.scene.children[1]; //moon1
+    moon1 = model.children[2]; //moon1
     moon1.material.needsUpdate = true;
     //moon1.material = materialSun;
     
-    moon2 = gltf.scene.children[2]; //moon2
+    moon2 = model.children[3]; //moon2
     moon2.material.needsUpdate = true;
     //moon2.material = materialSun;
     
-    sunGlow = gltf.scene.children[3]; //sunGlow
+    sunGlow = model.children[4]; //sunGlow
     sunGlow.material = materialGlow;
     sunGlow.scale.multiplyScalar(1.3);
     sunGlow.castShadow = false;
     sunGlow.receiveShadow = false;
     
-    moon3 = gltf.scene.children[4]; //moon3
+    moon3 = model.children[5]; //moon3
     moon3.material.needsUpdate = true;
     //moon3.material = materialSun;
 
