@@ -7,6 +7,8 @@ import glowFragmentShader from "./shaders/glowfragmentshader.glsl";
 
 import * as dat from "dat.gui";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+// import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
+import Stats from 'three/examples/jsm/libs/stats.module'
 
 
 //global params
@@ -57,7 +59,7 @@ const aspect = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-const camera = new THREE.PerspectiveCamera(parameters.fov, aspect.width / aspect.height, .1, 1000);
+const camera = new THREE.PerspectiveCamera(parameters.fov, aspect.width / aspect.height, .001, 100);
 camera.position.z = 0.5;
 camera.position.y = 0;
 scene.add(camera);
@@ -202,54 +204,67 @@ let model = null;
 let mixer = null;
 
 // Loading of model from  .glTF file
+//const loader = new FBXLoader();
 const loader = new GLTFLoader();
-loader.load('model/spheres.gltf', (gltf) => {
-    model = gltf.scene.children[0]; //sun
-    //model.scale.set(10, 10, 10);
+loader.load('model/intro.glb', (object) => {
+    model = object.scene;//.children[0]; //sun
+    model.scale.set(10, 10, 10);
     // Ustawienie pozycji modelu
     //model.position.z = -5.0;
     // Inicjalizacja animacji
     mixer = new THREE.AnimationMixer(model);
     model.userData.mixer = mixer;
 
-    phone = model.children[0]; //phone object
+    let indx = 0;
+
+    phone = model.children[indx]; //phone object
     phone.children[0].material.needsUpdate = true;  //LCD display
     const matPhoneCase = new THREE.MeshPhongMaterial({ color: 0xAAAAAA });
-    matPhoneCase.reflectivity = 1.0;
+    matPhoneCase.reflectivity = .4;
     matPhoneCase.shininess = .9;
 
-    const matLCD = new THREE.MeshPhongMaterial({ color: 0x111111 });
-    matLCD.reflectivity = .4;
-    matLCD.shininess = .4;
+    const matLCD = new THREE.MeshPhongMaterial({ color: 0x000000 });
+    matLCD.reflectivity = 1.0;
+    matLCD.shininess = 1.0;
+    indx++;
     
     phone.children[1].material.needsUpdate = true;  //phone case
     phone.children[0].material = matPhoneCase;
     phone.children[1].material = matLCD;
 
-    sun = model.children[1]; //sun
+    sun = model.children[indx + 1]; //sun
     sun.material.needsUpdate = true;
     //sun.material = materialSun;
     
-    moon1 = model.children[2]; //moon1
+    moon1 = model.children[indx + 2]; //moon1
     moon1.material.needsUpdate = true;
     //moon1.material = materialSun;
     
-    moon2 = model.children[3]; //moon2
+    moon2 = model.children[indx + 3]; //moon2
     moon2.material.needsUpdate = true;
     //moon2.material = materialSun;
     
-    sunGlow = model.children[4]; //sunGlow
+    sunGlow = model.children[indx + 4]; //sunGlow
     sunGlow.material = materialGlow;
     sunGlow.scale.multiplyScalar(1.3);
     sunGlow.castShadow = false;
     sunGlow.receiveShadow = false;
     
-    moon3 = model.children[5]; //moon3
+    moon3 = model.children[indx + 5]; //moon3
     moon3.material.needsUpdate = true;
     //moon3.material = materialSun;
 
-    if(gltf.animations.length > 0) {
-      action = mixer.clipAction(gltf.animations[0]);
+    const matHand = new THREE.MeshPhongMaterial({ color: 0x222222 });
+    matHand.reflectivity = .4;
+    matHand.shininess = .4;
+
+    hand = model.children[indx + 6]; //moon3
+    hand.material.needsUpdate = true;
+    hand.frustumCulled = false;
+    hand.material = matHand;  //IMPORTANT so that hand is visible in close range
+
+    if(object.animations.length > 0) {
+      action = mixer.clipAction(object.animations[0]);
       if(action) 
         action.play(); // Rozpoczęcie animacji
     } 
@@ -264,21 +279,25 @@ loader.load('model/spheres.gltf', (gltf) => {
     console.log( 'An error happened' );
   }
 );
+
+const stats = Stats()
+document.body.appendChild(stats.dom)
+
 //------------------------------------------------------------------
 //-----------------------Animate------------------------------------
 //------------------------------------------------------------------
 const animate = () => {
   const elapsedTime = clock.getElapsedTime();
   if (sun !== null) {
-    sun.rotation.y = elapsedTime * Math.PI / 100;
+    //sun.rotation.y = elapsedTime * Math.PI / 100;
   }
   if (action !== null)  {
     mixer.update(parameters.aniSpeed)
     //if(mixer.animate[0].time > 7.7)
-      
   }
 
   window.requestAnimationFrame(animate);
   renderer.render(scene, camera); //draw what the camera inside the scene captured
+  stats.update()
 };
 animate();
