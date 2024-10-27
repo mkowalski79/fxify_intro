@@ -22,7 +22,7 @@ import { Band } from "./Band.js";
 
 import {LcdDisplay} from "./LcdDisplay.js";
 
-const LCD_ASPECT = .6;
+const LCD_ASPECT = .7;
 
 
 //global params
@@ -36,7 +36,7 @@ const parameters = {
 }
 
 
-
+let composer = null;
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
 const gui = new dat.GUI();
@@ -81,18 +81,17 @@ texSun1_3.wrapT = THREE.RepeatWrapping;
 texSun1_3.wrapS = THREE.RepeatWrapping;
 
 const lcdDisplay = new LcdDisplay(LCD_ASPECT);
-lcdDisplay.startTime1 = 3;
-lcdDisplay.startTime2 = 3 + 2;
+
 
 //Camera
 const aspect = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-const camera = new THREE.PerspectiveCamera(parameters.fov, aspect.width / aspect.height, .1, 100);
-camera.position.z = 0.5;
-camera.position.y = 0;
-scene.add(camera);
+let camera = null;//new THREE.PerspectiveCamera(parameters.fov, aspect.width / aspect.height, .1, 100);
+// camera.position.z = 0.5;
+// camera.position.y = 0;
+//scene.add(camera);
 
 
 //Mesh
@@ -169,33 +168,7 @@ const matMoon = new THREE.MeshStandardMaterial({
   // displacementScale: .0001
 });
 let rtTexture = new THREE.WebGLRenderTarget(  512, 512);
-const materialGlow = new THREE.ShaderMaterial({
-  uniforms: {
-    "c": {
-      type: "f",
-      value: parameters.c
-    },
-    "p": {
-      type: "f",
-      value: parameters.p
-    },
-    glowColor: {
-      type: "c",
-      value: new THREE.Color(0x004aff)
-    },
-    viewVector: {
-      type: "v3",
-      value: camera.position
-    }
-  },
-  vertexShader: glowVertexShader,
-  fragmentShader: glowFragmentShader,
-  castShadow: false,
-  receiveShadow: false,
-  side: THREE.BackSide,
-  blending: THREE.AdditiveBlending,
-  transparent: true,
-});
+
 
 //---------------------------------------------------------------------------------------
 //-------------------------------------Light---------------------------------------------
@@ -219,10 +192,10 @@ gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
 gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
 gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").onChange(function (value) { sunGlow.material.uniforms["c"].value = parameters.c;});
 gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange(function (value) { sunGlow.material.uniforms["p"].value = parameters.p;});
-gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation X").onChange(function(value) { camera.rotation.x = value; });
-gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation y").onChange(function(value) { camera.rotation.y = value; });
-gui.add(camera.rotation, "z").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation z").onChange(function(value) { camera.rotation.z = value; });
-gui.add(camera.position, "z").min(-5).max(5).step(.05).name("position z").onChange(function(value) { camera.position.z = value; });
+// gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation X").onChange(function(value) { camera.rotation.x = value; });
+// gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation y").onChange(function(value) { camera.rotation.y = value; });
+// gui.add(camera.rotation, "z").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation z").onChange(function(value) { camera.rotation.z = value; });
+// gui.add(camera.position, "z").min(-5).max(5).step(.05).name("position z").onChange(function(value) { camera.position.z = value; });
 gui.add(parameters, "fov").min(10).max(200).step(2).name("fov").onChange(function(value) { camera.fov = value; camera.updateProjectionMatrix(); });
 gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 
@@ -300,14 +273,6 @@ renderer.clearColor = new THREE.Color('#000000');
 
 texSun.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
-//responsive view, update view when window is resizing
-window.addEventListener("resize", event => {
-  renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
-});
-
 
 scene.add(ambientLight);
 scene.add(directionalLight);
@@ -323,14 +288,20 @@ let mixer = null;
 const loader = new GLTFLoader();
 loader.load('model/intro.glb', (object) => {
     model = object.scene;//.children[0]; //sun
-    model.scale.set(10, 10, 10);
+    if(object.cameras.length > 0 )
+      camera = object.cameras[0];
+    camera.near = 0.001;
+    camera.far = 100;
+    camera.frustumCulled = false;
+    resizeWindow(null);
+    //model.scale.set(10, 10, 10);
     // Ustawienie pozycji modelu
     //model.position.z = -5.0;
     // Inicjalizacja animacji
     mixer = new THREE.AnimationMixer(model);
     model.userData.mixer = mixer;
 
-    let indx = 0;
+    let indx = 1;
 
     phone = model.children[indx]; //phone object
     phone.children[0].material.needsUpdate = true;  //LCD display
@@ -342,12 +313,12 @@ loader.load('model/intro.glb', (object) => {
     const matLCD1 = new THREE.MeshPhongMaterial({ color: 0x404040 });
     matLCD.reflectivity = .1;
     matLCD.shininess = .1;
-    indx++;
+    indx+=2;
     
     phone.children[1].material.needsUpdate = true;  //phone case
     phone.children[0].material = matPhoneCase;
     phone.children[1].material = matLCD;
-    const lcdGlow = materialGlow.clone();
+    const lcdGlow = matLCD1;
     //lcdGlow.side = THREE.FrontSide;
     //phone.children[0].material = materialGlow;
 
@@ -370,6 +341,34 @@ loader.load('model/intro.glb', (object) => {
     moon3.material = matMoon.clone();
     moon3.material.needsUpdate = true;
     
+    const materialGlow = new THREE.ShaderMaterial({
+      uniforms: {
+        "c": {
+          type: "f",
+          value: parameters.c
+        },
+        "p": {
+          type: "f",
+          value: parameters.p
+        },
+        glowColor: {
+          type: "c",
+          value: new THREE.Color(0x004aff)
+        },
+        viewVector: {
+          type: "v3",
+          value: camera.position
+        }
+      },
+      vertexShader: glowVertexShader,
+      fragmentShader: glowFragmentShader,
+      castShadow: false,
+      receiveShadow: false,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+    });
+
     sunGlow = model.children[indx + 3]; //sunGlow
     sunGlow.material = materialGlow;
     sunGlow.scale.multiplyScalar(1.23);
@@ -393,7 +392,14 @@ loader.load('model/intro.glb', (object) => {
         action.play(); // Rozpoczęcie animacji
     } 
     scene.add(model);
+
+    //responsive view, update view when window is resizing
+    window.addEventListener("resize", resizeWindow);
+    initComposer();
+    animate();
   },
+
+
   // called while loading is progressing
   function ( xhr ) {
     console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
@@ -404,29 +410,35 @@ loader.load('model/intro.glb', (object) => {
   }
 );
 
+function resizeWindow(event) {
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+}
 const stats = Stats()
 document.body.appendChild(stats.dom)
 
-const composer = new EffectComposer( renderer );
-const renderPass = new RenderPass( scene, camera ); 
-composer.addPass( renderPass ); 
-const filmPass = new FilmPass(
-  .7,   // intensity
-  false,  
-);
-filmPass.uniforms.grayscale.value = .0;
-composer.addPass(filmPass);
-filmPass.enabled = parameters.filmPass;
+function initComposer() {
+  composer = new EffectComposer( renderer );
+  const renderPass = new RenderPass( scene, camera ); 
+  composer.addPass( renderPass ); 
+  const filmPass = new FilmPass(
+    .7,   // intensity
+    false,  
+  );
+  filmPass.uniforms.grayscale.value = .0;
+  composer.addPass(filmPass);
+  filmPass.enabled = parameters.filmPass;
 
-//composer.removePass(filmPass);
-
-
-//glowing effect on the band
-const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-bloomPass.threshold = .8;
-bloomPass.strength = 1.2;
-bloomPass.radius = .10;
-composer.addPass(bloomPass);
+  
+  //glowing effect on the band
+  const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+  bloomPass.threshold = .8;
+  bloomPass.strength = 1.2;
+  bloomPass.radius = .10;
+  composer.addPass(bloomPass);
+}
 
 const cameraMoveY = 0.1;
 
@@ -457,7 +469,7 @@ const animate = () => {
       mixer.time = 0;
   }
   }
-  lcdDisplay.update(clock.getElapsedTime(), rtTexture, renderer);
+  lcdDisplay.update(clock.getElapsedTime(), rtTexture, renderer, parameters.aniSpeed);
 
   renderer.setSize(aspect.width, aspect.height); //Renderer size
   renderer.setRenderTarget( null );
@@ -469,4 +481,3 @@ const animate = () => {
   //renderer.render(scene, camera); //draw what the camera inside the scene captured
   stats.update()
 };
-animate();

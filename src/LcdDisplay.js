@@ -14,7 +14,7 @@ class LcdDisplay {
         this.cameraRTT.position.y = 0;
 
         LCD_ASPECT = aspect;
-        this.scale = 1.0;
+        this.scale = 1.3;
         const material = new THREE.MeshBasicMaterial({
             //color: 0x3045ad,
             map: new THREE.TextureLoader().load("texture/gradient_bg_lcd.png"),
@@ -56,11 +56,12 @@ class LcdDisplay {
 
         this.chart = new CandleChart();
         this.chart.group.scale.y = LCD_ASPECT;
-        //this.chart.group.visible = false;
+        //this.chart.group.visible = !false;
 
         this.circle.scale.y = LCD_ASPECT;
         this.circle2.scale.y = LCD_ASPECT;
         this.plane.scale.y = LCD_ASPECT;
+        this.plane.scale.x = .98;
         this.sceneRTT.add(this.chart.group);
 
 
@@ -115,7 +116,7 @@ class LcdDisplay {
             this.cubeGroup.add(cube2);
 
         }
-        this.startTime1 = 0;
+        this.startTime1 = 2.2;
         this.startTime2 = 2 + this.startTime1;
         this.cubeGroup.visible = false;
         this.sceneRTT.add(this.cubeGroup);
@@ -123,7 +124,7 @@ class LcdDisplay {
 
     }
 
-    update(tm, bufferTexture, renderer) {
+    update(tm, bufferTexture, renderer, speed) {
 
 
         renderer.setRenderTarget( bufferTexture );
@@ -136,7 +137,7 @@ class LcdDisplay {
         this.chart.group.scale.x = (this.scale);
         this.chart.group.scale.y = (this.scale);
         this.scale *= .99;
-        this.chart.group.position.x = -(this.chart.bars.length * this.scale);
+        this.chart.group.position.x = -(this.chart.bars.length * (this.scale));
         this.chart.group.position.y = -(6 * this.scale);
         if (this.scale < .3)
             this.circle2.visible = true;
@@ -152,7 +153,7 @@ class LcdDisplay {
                     if(i > 1) this.chart.group.visible = false;
                     this.cubesLeft[2 - i].position.x = (this.endPosL[2 - i] - this.startPosL[2 - i]) * this.shift[i] + this.startPosL[2 - i];
                     this.cubesRight[i].position.x = (this.endPosR[i] - this.startPosR[i]) * this.shift[i] + this.startPosR[i];
-                    this.shift[i] += 0.01;
+                    this.shift[i] += speed;
                 }
             }
         }
