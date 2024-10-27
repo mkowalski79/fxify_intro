@@ -40,7 +40,7 @@ let composer = null;
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
 const gui = new dat.GUI();
-
+let bandList = [];
 //---------------------------------Objects/Materials----------------------
 
 let hand = null;
@@ -61,6 +61,7 @@ const texMoon2 = new THREE.TextureLoader().load('./texture/mooncrest1.jpg');
 texMoon2.wrapT = THREE.RepeatWrapping;
 texMoon2.wrapS = THREE.RepeatWrapping;
 
+
 const texMoon = new THREE.TextureLoader().load('./texture/moon.jpg');
 texMoon.wrapT = THREE.RepeatWrapping;
 texMoon.wrapS = THREE.RepeatWrapping;
@@ -72,100 +73,83 @@ texSunBump.wrapS = THREE.RepeatWrapping;
 texSunBump.repeat.set(3,1);
 
 
+const texSunMain = new THREE.TextureLoader().load('./texture/moon.jpg');
+texSunMain.wrapT = THREE.RepeatWrapping;
+texSunMain.wrapS = THREE.RepeatWrapping;
+
 const texSun1_2 = new THREE.TextureLoader().load('./texture/sun1_2.png');
 texSun1_2.wrapT = THREE.RepeatWrapping;
 texSun1_2.wrapS = THREE.RepeatWrapping;
+texSun1_2.offset.set(.07,-.1);
+
 
 const texSun1_3 = new THREE.TextureLoader().load('./texture/sun1_2.png');
 texSun1_3.wrapT = THREE.RepeatWrapping;
 texSun1_3.wrapS = THREE.RepeatWrapping;
+texSun1_3.offset.set(-.07,.12);
 
 const lcdDisplay = new LcdDisplay(LCD_ASPECT);
 
-
 //Camera
+let camera = null;
 const aspect = {
   width: window.innerWidth,
   height: window.innerHeight,
 };
-let camera = null;//new THREE.PerspectiveCamera(parameters.fov, aspect.width / aspect.height, .1, 100);
-// camera.position.z = 0.5;
-// camera.position.y = 0;
-//scene.add(camera);
-
-
-//Mesh
-// const material = new THREE.ShaderMaterial({
-//   vertexShader, 
-//   fragmentShader,
-//   uniforms: {
-//     globeTexture: {
-//       value: texMap,
-//       //value: new THREE.TextureLoader().load('./texture/color.jpg'),
-//     },
-//     u_time: {
-//       value: clock.getElapsedTime()
-//     }
-//   } 
-//   // color: 0x0f2222, 
-// });
 
 const matSun = new THREE.MeshLambertMaterial({
   color: 0xFFFFFF,
   map: texSun,
-  emissiveMap: texSun1_3,
+  emissiveMap: texSunMain,
   emissiveIntensity: .1, 
   // bumpMap: texSunBump,
-  bumpScale: .2,
   side: THREE.DoubleSide,
-  castShadow: false,
-  receiveShadow: false,
   //transparent: true,
   //opacity: 1.0,
   //displacementMap: new THREE.TextureLoader().load('./texture/displacementMap.jpg'),
   //displacementScale: .1
 });
 
-const material1 = new THREE.MeshStandardMaterial({
-  color: 0xAAAAFF,
+const matSun1 = new THREE.MeshStandardMaterial({
+  color: 0xFFFFFF,
   map: texSun1_2,
   transparent: true,
   side: THREE.FrontSide,
   opacity: .65,
-  castShadow: false,
-  receiveShadow: false,
-
-  //bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
+  bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
   // opacity: .3,
+  //displacementMap: new THREE.TextureLoader().load('./texture/displacementMap.jpg'),
+  //displacementScale: .1
+});
+
+const matSun2 = new THREE.MeshStandardMaterial({
+  color: 0xFFFFFF,
+  map: texSun1_3,
+  transparent: true,
+  side: THREE.FrontSide,
+  opacity: .65,
+  bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
+  
   //displacementMap: new THREE.TextureLoader().load('./texture/displacementMap.jpg'),
   //displacementScale: .1
 });
 
 const matMoon2 = new THREE.MeshStandardMaterial({
   color: 0xAAAAFF,
-  map: texMoon2,
-  bumpMap: texMoon2,
-  bumpScale: 0.001,
+  map: texMoon2.clone(),
+  //bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
+  //bumpScale: 0.00001,
   transparent: false,
   side: THREE.FrontSide,
   //opacity: .65,
-  castShadow: false,
-  receiveShadow: false,
 
-  // displacementMap: texMoon2,
-  // displacementScale: .0001
 });
 const matMoon = new THREE.MeshStandardMaterial({
   color: 0xAAAAFF,
-  map: texMoon,
+  map: texMoon.clone(),
   transparent: false,
   side: THREE.FrontSide,
   //opacity: .65,
-  castShadow: false,
-  receiveShadow: false,
-
-  // displacementMap: texMoon,
-  // displacementScale: .0001
 });
 let rtTexture = new THREE.WebGLRenderTarget(  512, 512);
 
@@ -199,6 +183,7 @@ gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange(functio
 gui.add(parameters, "fov").min(10).max(200).step(2).name("fov").onChange(function(value) { camera.fov = value; camera.updateProjectionMatrix(); });
 gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 
+
 const folder = gui.addFolder('PostProduction');
 	const mvGUI = folder.add( parameters, 'filmPass' ).name("Film Pass").listen();
 	mvGUI.onChange( function(value) { 
@@ -215,15 +200,20 @@ const folder = gui.addFolder('PostProduction');
 const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight);
 scene.add(directionalLightHelper);
 
+  
+function toRadians(angle) {
+  return angle * Math.PI / 180.0;
+}
+
 function eight() {
   let theta = 0;
-  let radius = .1;
+  let radius = .01;
 
   const points = [];
   while (theta < 360 * 10) {
     let z = .1;
-    let x = radius * Math.sin(this.toRadians(theta)) + .02;
-    let y = radius * Math.sin(2 * this.toRadians(theta)) / 2;
+    let x = radius * Math.sin(toRadians(theta)) + .02;
+    let y = radius * Math.sin(2 * toRadians(theta)) / 2;
     theta += ~~(Math.random() + 5);
     radius *= .9998;
     points.push(new THREE.Vector3(x, y, z));
@@ -233,30 +223,31 @@ function eight() {
 }
 function circle() {
   let theta = 0;
-  let radius = .125;
+  let radius = .011;
 
   const points = [];
   while (theta < 360 * 10) {
-    let y = 0;
-    let x = 1.0 * radius * Math.cos(this.toRadians(theta)) + .0;
-    let z = 1.0 * radius * Math.sin(this.toRadians(theta)) + 0.0;
-
     theta += ~~(Math.random() + 5);
+    let y = 0;
+    let x = 1.0 * radius * Math.cos(toRadians(theta)) + .0;
+    let z = 1.0 * radius * Math.sin(toRadians(theta)) + 0.0;
+
     //radius *= .9998;
     points.push(new THREE.Vector3(x, y, z));
   }
   return points;
 }
-const b1 = new Band(circle, 0.002, 0.07);
-b1.group.position.y += .05;
-b1.group.position.z += .02;
-b1.group.rotation.x = Math.PI / 6;
+const b1 = new Band(circle(), 0.0002, parameters.aniSpeed*4  );
+b1.group.position.y += .001;
+b1.group.position.z += .0;
+b1.group.rotation.x = Math.PI / 3.5;
 scene.add(b1.group);
 
-const b2 = new Band(eight, 0.004, 0.05);
-b2.group.position.y -= .02;
-b2.group.position.z += .02;
-scene.add(b2.group);
+
+// const b2 = new Band(eight, 0.0002, 0.05);
+// b2.group.position.y -= .002;
+// b2.group.position.z += .002;
+// //scene.add(b2.group);
 
 //Renderer
 const canvas = document.querySelector(".draw"); //Select the canvas
@@ -301,9 +292,8 @@ loader.load('model/intro.glb', (object) => {
     mixer = new THREE.AnimationMixer(model);
     model.userData.mixer = mixer;
 
-    let indx = 1;
 
-    phone = model.children[indx]; //phone object
+    phone = model.children[1]; //phone object
     phone.children[0].material.needsUpdate = true;  //LCD display
     const matPhoneCase = new THREE.MeshPhongMaterial({ color: 0x333333 });
     matPhoneCase.reflectivity = .4;
@@ -313,7 +303,6 @@ loader.load('model/intro.glb', (object) => {
     const matLCD1 = new THREE.MeshPhongMaterial({ color: 0x404040 });
     matLCD.reflectivity = .1;
     matLCD.shininess = .1;
-    indx+=2;
     
     phone.children[1].material.needsUpdate = true;  //phone case
     phone.children[0].material = matPhoneCase;
@@ -322,23 +311,53 @@ loader.load('model/intro.glb', (object) => {
     //lcdGlow.side = THREE.FrontSide;
     //phone.children[0].material = materialGlow;
 
-    sun = model.children[indx + 1]; //sun
-    sun.material.needsUpdate = true;
-    sun.material = matSun.clone();
+    const bands = model.children[2]; //bands
+
+    for(let i = 0; i < bands.children.length;i++) {
+      const helix = bands.children[i]; //moon3
+      helix.visible = false;
+      const geo = helix.geometry;
+      const points  = [];
+      let positions = geo.attributes.position.array;
+      let ptCout = positions.length / 3;
+      for (let i = 0; i < ptCout; i++) {
+          points.push( new THREE.Vector3(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]));
+      }
+
+        const b2 = new Band(points, 0.0002, 0.05);
+        // b2.group.position.y -= .00;
+        // b2.group.position.z += .00;
+        // b2.group.rotation.x = Math.PI/2;
+        bandList.push(b2);
+    }
+
     
-    moon1 = model.children[indx + 5]; //moon 1
+    sun = model.children[5]; //sun
+    sun.geometry.clearGroups();
+    sun.geometry.addGroup( 0, Infinity, 0 );
+    sun.geometry.addGroup( 0, Infinity, 1 );
+    sun.geometry.addGroup( 0, Infinity, 2 );
+    const materials = [matSun, matSun1, matSun2]
+    
+    
+    sun.material.needsUpdate = true;
+    sun.material = materials;//matSun.clone();
+    
+    moon1 = model.children[9]; //moon 1
     moon1.material.needsUpdate = true;
     moon1.material = matMoon2.clone();
     moon1.material.map = moon1.material.map.clone();
-    moon1.material.map.offset.x = .4;   //move so there will be visible orange crest;
+    moon1.material.map.offset.x = .6;   //move so there will be visible orange crest;
     
-    moon2 = model.children[indx + 2]; //moon 2
+    moon2 = model.children[6]; //moon 2
     moon2.material.needsUpdate = true;
     moon2.material = matMoon2.clone();
+    moon2.material.map = moon2.material.map.clone();
     moon2.material.map.offset.x = -.85;   //move so there will be visible orange crest;
     
-    moon3 = model.children[indx + 4]; //moon 3
+    moon3 = model.children[8]; //moon 3
     moon3.material = matMoon.clone();
+    moon3.material.map = moon3.material.map.clone();
     moon3.material.needsUpdate = true;
     
     const materialGlow = new THREE.ShaderMaterial({
@@ -369,7 +388,7 @@ loader.load('model/intro.glb', (object) => {
       transparent: true,
     });
 
-    sunGlow = model.children[indx + 3]; //sunGlow
+    sunGlow = model.children[7]; //sunGlow
     sunGlow.material = materialGlow;
     sunGlow.scale.multiplyScalar(1.23);
     sunGlow.castShadow = false;
@@ -380,7 +399,10 @@ loader.load('model/intro.glb', (object) => {
     matHand.reflectivity = .4;
     matHand.shininess = .4;
 
-    hand = model.children[indx + 6]; //moon3
+
+    
+
+    hand = model.children[10]; //moon3
     hand.material.needsUpdate = true;
     hand.frustumCulled = false;
     hand.material = matHand;  //IMPORTANT so that hand is visible in close range
@@ -451,6 +473,10 @@ const animate = () => {
   if (action !== null)  {
     if(mixer.time + parameters.aniSpeed < action.getClip().duration) {
       mixer.update(parameters.aniSpeed)
+      texSun1_3.offset.x += parameters.aniSpeed/150.0;
+      texSun1_3.offset.y -= parameters.aniSpeed/100.0;
+      texSun1_2.offset.x -= parameters.aniSpeed/150.0;
+      texSun1_2.offset.y += parameters.aniSpeed/100.0;
       //b1.group.position.y+=0.0001;
       if (sun !== null) {
         //sun.rotation.y = elapsedTime * Math.PI / 100;
@@ -459,6 +485,9 @@ const animate = () => {
       }
       
       if(mixer.time > 9.1 && mixer.time) {
+        //bandList.forEach(b => scene.add(b.group));
+        //bandList = [];
+        
         // camera.position.y -= 0.00051;
         // camera.rotation.x -= 0.0001;
       }
@@ -467,6 +496,9 @@ const animate = () => {
       // camera.position.y = 0.0;
       // camera.rotation.x = 0.0;
       mixer.time = 0;
+      texSun1_2.offset.set(.07,-.1);
+      texSun1_3.offset.set(-.07,.12);
+      
   }
   }
   lcdDisplay.update(clock.getElapsedTime(), rtTexture, renderer, parameters.aniSpeed);

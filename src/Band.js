@@ -9,10 +9,10 @@ const BAND_SIZE = .005;
 
 
 class Band {
-    constructor(fun, size, speed) {
+    constructor(points, size, speed) {
       this.size = size;
       this.speed = speed;
-      this.getPoints = fun;
+      this.points = points;
       this.group = new THREE.Object3D();
       this.position = new THREE.Vector3();
       this.segments = 65;
@@ -44,7 +44,7 @@ class Band {
         position,
         line
       } = this;
-      const wayPoints = this.getPoints();
+      const wayPoints = this.points;
     //   this.geometry.attributes.position.array.forEach(
     //     v => v.copy(wayPoints[0])
     //   );
