@@ -20,6 +20,11 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { Band } from "./Band.js";
 
 
+import {LcdDisplay} from "./LcdDisplay.js";
+
+const LCD_ASPECT = .6;
+
+
 //global params
 const parameters = {
   fov: 26,
@@ -49,6 +54,7 @@ let sunGlow = null;
 const texSun = new THREE.TextureLoader().load('./texture/sun1.jpg');
 texSun.wrapT = THREE.RepeatWrapping;
 texSun.wrapS = THREE.RepeatWrapping;
+texSun.repeat.set(3,1);
 
 
 const texMoon2 = new THREE.TextureLoader().load('./texture/mooncrest1.jpg');
@@ -63,6 +69,7 @@ texMoon.wrapS = THREE.RepeatWrapping;
 const texSunBump = new THREE.TextureLoader().load('./texture/sun1_bump.png');
 texSunBump.wrapT = THREE.RepeatWrapping;
 texSunBump.wrapS = THREE.RepeatWrapping;
+texSunBump.repeat.set(3,1);
 
 
 const texSun1_2 = new THREE.TextureLoader().load('./texture/sun1_2.png');
@@ -73,6 +80,9 @@ const texSun1_3 = new THREE.TextureLoader().load('./texture/sun1_2.png');
 texSun1_3.wrapT = THREE.RepeatWrapping;
 texSun1_3.wrapS = THREE.RepeatWrapping;
 
+const lcdDisplay = new LcdDisplay(LCD_ASPECT);
+lcdDisplay.startTime1 = 3;
+lcdDisplay.startTime2 = 3 + 2;
 
 //Camera
 const aspect = {
@@ -101,10 +111,11 @@ scene.add(camera);
 //   // color: 0x0f2222, 
 // });
 
-
-const matSun = new THREE.MeshStandardMaterial({
+const matSun = new THREE.MeshLambertMaterial({
   color: 0xFFFFFF,
   map: texSun,
+  emissiveMap: texSun1_3,
+  emissiveIntensity: .1, 
   // bumpMap: texSunBump,
   bumpScale: .2,
   side: THREE.DoubleSide,
@@ -157,7 +168,7 @@ const matMoon = new THREE.MeshStandardMaterial({
   // displacementMap: texMoon,
   // displacementScale: .0001
 });
-
+let rtTexture = new THREE.WebGLRenderTarget(  512, 512);
 const materialGlow = new THREE.ShaderMaterial({
   uniforms: {
     "c": {
@@ -327,7 +338,8 @@ loader.load('model/intro.glb', (object) => {
     matPhoneCase.reflectivity = .4;
     matPhoneCase.shininess = .9;
 
-    const matLCD = new THREE.MeshPhongMaterial({ color: 0x404040 });
+    const matLCD = new THREE.MeshBasicMaterial({color:0xffffff, map:rtTexture.texture});
+    const matLCD1 = new THREE.MeshPhongMaterial({ color: 0x404040 });
     matLCD.reflectivity = .1;
     matLCD.shininess = .1;
     indx++;
@@ -341,7 +353,7 @@ loader.load('model/intro.glb', (object) => {
 
     sun = model.children[indx + 1]; //sun
     sun.material.needsUpdate = true;
-    sun.material = matMoon.clone();
+    sun.material = matSun.clone();
     
     moon1 = model.children[indx + 5]; //moon 1
     moon1.material.needsUpdate = true;
@@ -411,7 +423,7 @@ filmPass.enabled = parameters.filmPass;
 
 //glowing effect on the band
 const bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
-bloomPass.threshold = .2;
+bloomPass.threshold = .8;
 bloomPass.strength = 1.2;
 bloomPass.radius = .10;
 composer.addPass(bloomPass);
@@ -433,7 +445,7 @@ const animate = () => {
         // sun.material.map.offset.x += .0001;
         // sun.material.map.offset.y += .0001;
       }
-      console.log(mixer.time);
+      
       if(mixer.time > 9.1 && mixer.time) {
         // camera.position.y -= 0.00051;
         // camera.rotation.x -= 0.0001;
@@ -445,8 +457,14 @@ const animate = () => {
       mixer.time = 0;
   }
   }
+  lcdDisplay.update(clock.getElapsedTime(), rtTexture, renderer);
+
+  renderer.setSize(aspect.width, aspect.height); //Renderer size
+  renderer.setRenderTarget( null );
+  //renderer.render(scene, camera); //draw what the camera inside the scene captured
 
   window.requestAnimationFrame(animate);
+
   composer.render();
   //renderer.render(scene, camera); //draw what the camera inside the scene captured
   stats.update()
