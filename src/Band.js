@@ -1,23 +1,18 @@
 import * as THREE from "three";
-import * as GSAP from "gsap";
 import { MeshLine, MeshLineMaterial } from 'three.meshline';
-import glowVertexShader from "./shaders/glowvertexshader.glsl";
-import glowFragmentShader from "./shaders/glowfragmentshader.glsl";
 
 const BAND_SIZE = .005;
 
 
 
 class Band {
-    constructor(points, size, speed) {
+    constructor(points, size) {
       this.size = size;
-      this.speed = speed;
       this.points = points;
       this.group = new THREE.Object3D();
       this.position = new THREE.Vector3();
-      this.segments = 65;
+      this.segments = 45;
       this.init();
-      this.spawn();
     }
   
     init() {
@@ -25,7 +20,6 @@ class Band {
       const mat = new MeshLineMaterial({
         color: new THREE.Color(0xffffff),
         side: THREE.DoubleSide,
-        wireframe: !true,
       });
       this.line = new MeshLine();
       this.mesh = new THREE.Mesh(this.line.geometry, mat);
@@ -35,23 +29,15 @@ class Band {
         verts.push(new THREE.Vector3());
       }
       this.geometry.setFromPoints(verts);
-      this.light = new THREE.PointLight(0xb65a40, .1, 1);
+      // this.light = new THREE.PointLight(0xb65a40, .1, 1);
       this.group.add(this.light);
+      this.group.visible = false;
+      this.line.setGeometry(this.geometry, pt => pt * this.size);
     }
   
-    spawn() {
-      const {
-        position,
-        line
-      } = this;
-      const wayPoints = this.points;
-    //   this.geometry.attributes.position.array.forEach(
-    //     v => v.copy(wayPoints[0])
-    //   );
-      this.position.copy(wayPoints[0]);
-      this.light.position.copy(wayPoints[0]);
-      line.setGeometry(this.geometry, p => p * this.size);
-      this.startPath(wayPoints);
+    start() {
+      this.indx = 0;
+      this.group.visible = false;
     }
   
   
@@ -60,47 +46,23 @@ class Band {
     }
   
     updatePosition() {
-      const {
-        position
-      } = this;
-      this.light.position.copy(position);
-      this.line.advance(position);
+      // this.light.position.copy(this.position);
+      this.line.advance(this.position);
     }
   
-    startPath(waypoints) {
-      const {
-        position
-      } = this;
-      this.timeline = new GSAP.TimelineMax({
-        onComplete: () => {
-          GSAP.TweenMax.to(this.position, 1, {
-            onUpdate: this.updatePosition.bind(this),
-          });
-        }
-      });
-      waypoints.forEach((pos, idx) => {
-        this.timeline.to(this.position, this.speed, {
-          x: pos.x,
-          y: pos.y,
-          z: pos.z,
-          onUpdate: this.updatePosition.bind(this),
-          ease: GSAP.Linear.easeNone
-        });
-  
-  
-        if (idx === 0) {
-          this.timeline.to(this.light, 0.2, {
-            power: 1.5 * 4 * Math.PI
-          });
-        }
-  
-        if (idx === waypoints.length - 1) {
-          this.timeline.to(this.light, 0.4, {
-            power: 0.1 * 4 * Math.PI
-          }, '-=0.45');
-        }
-  
-      });
+    update(steps) {
+      
+      if(!steps) 
+        steps = 1;
+      if(!this.group.visible)
+        setTimeout(()=> {this.group.visible = true}, 400);
+      this.position = this.points[this.indx];
+      
+      this.updatePosition();
+      if(this.indx < this.points.length - steps) 
+        this.indx+=steps;
+      else
+        this.indx = this.points.length-1;
     }
   }
 
