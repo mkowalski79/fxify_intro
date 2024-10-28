@@ -337,7 +337,8 @@ loader.load('model/intro.glb', (object) => {
     bandList[1].group.position.z += .005;
     bandList[1].group.rotation.z = Math.PI *.8;
 
-    bandList[2].group.position.x -= .002;
+    bandList[0].group.position.x -= .003;
+    bandList[0].group.position.y -= .003;
     bandList[0].group.rotation.z = +Math.PI *.2;
     
 
@@ -487,9 +488,9 @@ const animate = () => {
 
       //phone is rotating, launching first ribbons
       if (mixer.time > .8) {
-        bandList[0].update(1); //ribbon to the top left
-        bandList[1].update(1); //ribbon to the top right
-        bandList[2].update(1); //ribbon to the bottom right
+        bandList[0].update(2); //ribbon to the top left
+        bandList[1].update(2); //ribbon to the top right
+        bandList[2].update(2); //ribbon to the bottom right
       }
     } else { //reset, only in DEBUG mode
       mixer.time = 0;

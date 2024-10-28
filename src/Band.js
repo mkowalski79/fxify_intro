@@ -55,7 +55,7 @@ class Band {
       if(!steps) 
         steps = 1;
       if(!this.group.visible)
-        setTimeout(()=> {this.group.visible = true}, 400);
+        setTimeout(()=> {this.group.visible = true}, 300);
       this.position = this.points[this.indx];
       
       this.updatePosition();
