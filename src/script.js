@@ -494,6 +494,7 @@ const animate = () => {
       }
     } else { //reset, only in DEBUG mode
       mixer.time = 0;
+      lcdDisplay.reset();
       texSun1_2.offset.set(.07, -.1);
       texSun1_3.offset.set(-.07, .12);
       bandList.forEach(b => {
@@ -501,7 +502,7 @@ const animate = () => {
       });
     }
   }
-  lcdDisplay.update(clock.getElapsedTime(), rtTexture, renderer, parameters.aniSpeed);
+  lcdDisplay.update(mixer.time, rtTexture, renderer, parameters.aniSpeed);
 
   renderer.setSize(aspect.width, aspect.height); //Renderer size
   renderer.setRenderTarget(null);

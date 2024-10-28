@@ -67,6 +67,11 @@ class LcdDisplay {
 
         //rects:
 
+        this.initCubes();
+
+
+    }
+    initCubes(secondTime) {
         this.cubeGroup = new THREE.Group();
         this.cubesLeft = [];
         this.cubesRight = [];
@@ -77,7 +82,8 @@ class LcdDisplay {
         this.shift = [0, 0, 0];
 
         const offsetY = -7;
-        const startingDist = 6 //7;
+        const startingDist = 6; //7;
+
         for (let i = 0; i < 3; i++) {
             const geometry = new THREE.BoxGeometry(6 - i * 2, 1, 1);
             const material = new THREE.MeshBasicMaterial({
@@ -102,26 +108,37 @@ class LcdDisplay {
             this.cubesLeft.push(cube2);
             cube.scale.multiplyScalar(.8);
             cube2.scale.multiplyScalar(.8);
-            
+
             //cube2.position.x = -(6-i*2)/2 - 1 - startingDist;
             this.endPosL.push((6 - i * 2) / 2 - 1 + 1.5);
             this.startPosL.push(5 - (6 - i * 2) / 2 - 1 + 1 + startingDist);
-            
+
             cube2.position.x = 5 - (6 - i * 2) / 2 - 1 + 1 + startingDist;
             cube2.position.y = 6 - (-i * 2 + 1) + offsetY;
-            
-            this.sceneRTT.add(cube);
-            this.sceneRTT.add(cube2);
+
+            // this.sceneRTT.add(cube);
+            // this.sceneRTT.add(cube2);
             this.cubeGroup.add(cube);
             this.cubeGroup.add(cube2);
 
         }
-        this.startTime1 = 2.2;
-        this.startTime2 = 2 + this.startTime1;
+        this.startTime1 = 1.5;
+        this.startTime2 = 4.0 + this.startTime1;
         this.cubeGroup.visible = false;
         this.sceneRTT.add(this.cubeGroup);
+    }
 
-
+    reset(){
+        for (let i = 0; i < 3; i++) {
+            this.cubesRight[i].position.x = this.startPosR[i];
+            this.cubesLeft[i].position.x = this.startPosL[i];
+        }
+        this.shift = [0, 0, 0];
+        this.chart.group.visible = false;
+        this.cubeGroup.visible = false;
+        this.circle2.visible = false;
+        this.circle.visible = false;
+        this.scale = 1.3;
     }
 
     update(tm, bufferTexture, renderer, speed) {
