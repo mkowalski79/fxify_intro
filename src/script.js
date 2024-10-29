@@ -49,7 +49,7 @@ const parameters = {
 let composer = null;
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
-const gui = new dat.GUI();
+// const gui = new dat.GUI();
 const bandList = new Map(); //list of flying 'ribbons'
 const filmPass = new FilmPass(.7, false);
 
@@ -530,7 +530,7 @@ const animate = () => {
       else
         mixer.update(parameters.aniSpeed)
 
-      console.log(mixer.time);
+      // console.log(mixer.time);
       //phone is rotating, launching first ribbons
       
       if (mixer.time < 11) {
