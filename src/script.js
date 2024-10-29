@@ -41,7 +41,7 @@ const parameters = {
   p: 3.0,
   ambientLight: 0.75,
   directionLight: 0.75,
-  aniSpeed: 0.02,
+  aniSpeed: 0.024,
   filmPass: !true,
 }
 
@@ -181,34 +181,34 @@ directionalLight.position.set(0, 3.5, -4.5);
 // gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
 // gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
 // gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
-gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").onChange((value) => {
-  sunGlow.material.uniforms["c"].value = parameters.c;
-});
-gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange((value) => {
-  sunGlow.material.uniforms["p"].value = parameters.p;
-});
+// gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").onChange((value) => {
+//   sunGlow.material.uniforms["c"].value = parameters.c;
+// });
+// gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange((value) => {
+//   sunGlow.material.uniforms["p"].value = parameters.p;
+// });
 // gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation X").onChange(function(value) { camera.rotation.x = value; });
 // gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation y").onChange(function(value) { camera.rotation.y = value; });
 // gui.add(camera.rotation, "z").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation z").onChange(function(value) { camera.rotation.z = value; });
 // gui.add(camera.position, "z").min(-5).max(5).step(.05).name("position z").onChange(function(value) { camera.position.z = value; });
-gui.add(parameters, "fov").min(10).max(200).step(2).name("fov").onChange(function (value) {
-  camera.fov = value;
-  camera.updateProjectionMatrix();
-});
-gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
+// gui.add(parameters, "fov").min(10).max(200).step(2).name("fov").onChange(function (value) {
+//   camera.fov = value;
+//   camera.updateProjectionMatrix();
+// });
+// gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 
 
-const folder = gui.addFolder('PostProduction');
-const mvGUI = folder.add(parameters, 'filmPass').name("Film Pass").listen();
-mvGUI.onChange(function (value) {
+// const folder = gui.addFolder('PostProduction');
+// const mvGUI = folder.add(parameters, 'filmPass').name("Film Pass").listen();
+// mvGUI.onChange(function (value) {
 
-  if (value === true) {
-    filmPass.enabled = true;
-  } else {
-    filmPass.enabled = false;
-  }
-});
-folder.open();
+//   if (value === true) {
+//     filmPass.enabled = true;
+//   } else {
+//     filmPass.enabled = false;
+//   }
+// });
+// folder.open();
 
 
 function circle() {
@@ -262,7 +262,6 @@ let model = null;
 let mixer = null;
 
 // Loading of model from  .glTF file
-//const loader = new FBXLoader();
 const loader = new GLTFLoader();
 loader.load('model/intro.glb', (object) => {
     model = object.scene; //.children[0]; //sun
@@ -309,7 +308,7 @@ loader.load('model/intro.glb', (object) => {
     //lcdGlow.side = THREE.FrontSide;
     //phone.children[0].material = materialGlow;
 
-    const bands = model.children[indices.get('Bands')]; //bands
+    const bands = model.children[indices.get('Group001')]; //bands
 
     for (let i = 0; i < bands.children.length; i++) {
       const spline = bands.children[i];
@@ -347,15 +346,41 @@ loader.load('model/intro.glb', (object) => {
     bandList.get('Arc005').group.position.z -= .006;
     bandList.get('Arc005').group.rotation.z = +Math.PI *.35;
     
-    bandList.get('Arc006').group.position.x += .001;
-    bandList.get('Arc006').group.position.y -= .006;
-    bandList.get('Arc006').group.position.z -= .006;
-    bandList.get('Arc006').group.rotation.z = + Math.PI *.8;
+    bandList.get('Arc006').group.position.x += .000;
+    bandList.get('Arc006').group.position.y -= .008;
+    bandList.get('Arc006').group.position.z -= .005;
+    bandList.get('Arc006').group.rotation.z = + Math.PI *.75;
 
     bandList.get('Arc007').group.position.x += .001;
     bandList.get('Arc007').group.position.y -= .001;
     bandList.get('Arc007').group.position.z -= .004;
-    bandList.get('Arc007').group.rotation.z = + Math.PI*.95;
+    bandList.get('Arc007').group.rotation.z = + Math.PI*1.1;
+    
+    // bandList.get('Arc008').group.position.y -= .001;
+    // bandList.get('Arc008').group.position.z -= .004;
+     bandList.get('Arc008').group.rotation.z = + Math.PI*.15;
+     bandList.get('Arc008').group.position.x -= .0026;
+     bandList.get('Arc008').group.position.y -= .0022;
+     bandList.get('Arc008').delay = 0;
+     bandList.get('Arc009').group.rotation.z = + Math.PI *.85;
+     bandList.get('Arc009').group.position.x += .0026;
+     bandList.get('Arc009').group.position.y -= .0022;
+     bandList.get('Arc009').delay = 0;
+     bandList.get('Arc010').group.rotation.z = + Math.PI*1.15;
+     bandList.get('Arc010').group.position.x += .0026;
+     bandList.get('Arc010').group.position.y -= .001;
+     bandList.get('Arc010').delay = 0;
+
+
+    bandList.get('Helix001').size =  0.00045/3;
+    bandList.get('Helix001').init();
+    // bandList.get('Helix001').group.rotation.x =  -Math.PI/2.0;
+    bandList.get('Helix001').group.rotation.y =  Math.PI;
+    //  bandList.get('Helix001').group.rotation.z =  Math.PI/1.0;
+     bandList.get('Helix001').group.position.x += .0005;
+     bandList.get('Helix001').group.position.y -= .0015;
+     bandList.get('Helix001').group.position.z += .022;
+     bandList.get('Helix001').delay = 0;
     
     
 
@@ -438,7 +463,7 @@ loader.load('model/intro.glb', (object) => {
 
     if (object.animations.length > 0) {
       action = mixer.clipAction(object.animations[0]);
-      //action.setLoop( THREE.LoopOnce );
+      action.setLoop( THREE.LoopOnce );
       if (action)
         action.play(); // Rozpoczęcie animacji
     }
@@ -462,14 +487,11 @@ loader.load('model/intro.glb', (object) => {
 );
 
 function resizeWindow(event) {
-  renderer.setSize(innerWidth, innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
 }
-
-const stats = Stats()
-document.body.appendChild(stats.dom)
 
 //postproduction effects
 function initComposer() {
@@ -485,59 +507,75 @@ function initComposer() {
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
   bloomPass.threshold = .9;
   bloomPass.strength = 2.0;
-  bloomPass.radius = .10;
+  bloomPass.radius = .15;
   composer.addPass(bloomPass);
 }
 
-const RIBBON_SPEED = 2;
+const RIBBON_SPEED = 1;
 
 //------------------------------------------------------------------
 //-----------------------Animate------------------------------------
 //------------------------------------------------------------------
 const animate = () => {
-  window.requestAnimationFrame(animate);
-  //const elapsedTime = clock.getElapsedTime();
-
+  
+  
   if (action !== null) {
+    window.requestAnimationFrame(animate);
 
-    if (mixer.time + parameters.aniSpeed < action.getClip().duration) {
-      mixer.update(parameters.aniSpeed)
+    if (mixer.time + parameters.aniSpeed*2 < action.getClip().duration) {
+      if (mixer.time > 12.5) 
+        mixer.update(parameters.aniSpeed*2)
+      else
+        mixer.update(parameters.aniSpeed)
+
       console.log(mixer.time);
       //phone is rotating, launching first ribbons
+      
       if (mixer.time < 11) {
         texSun1_3.offset.x += parameters.aniSpeed / 150.0;
         texSun1_3.offset.y -= parameters.aniSpeed / 100.0;
         texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
         texSun1_2.offset.y += parameters.aniSpeed / 100.0;
       }
-      if (mixer.time > 2.5) {
-        bandList.get('Arc006').update(RIBBON_SPEED); //ribbon to the top left
+      if (mixer.time > 9.9) {
+        bandList.get('Arc008').update(RIBBON_SPEED); //ribbon to the top left
+        bandList.get('Arc009').update(RIBBON_SPEED); //ribbon to the top left
+        bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
+        bandList.get('Arc007').start();
+      }
+      if (mixer.time > 10.5) {
+        if (mixer.time > 13.0) {
+          bandList.get('Helix001').update(RIBBON_SPEED*3);  //slow down
+        }
+        else
+          bandList.get('Helix001').update(RIBBON_SPEED*6);
       }
       if (mixer.time > 3.4) {
         bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').update(RIBBON_SPEED); //ribbon to the top left
       }
-
+      
       if (mixer.time > .8) {
         bandList.get('Arc004').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc003').update(RIBBON_SPEED); //ribbon to the top right
         bandList.get('Arc002').update(RIBBON_SPEED); //ribbon to the bottom right
       }
-    } else { //reset, only in DEBUG mode
-      mixer.time = 0;
-      lcdDisplay.reset();
-      texSun1_2.offset.set(.07, -.1);
-      texSun1_3.offset.set(-.07, .12);
-      bandList.forEach(b => {
-        b.start();
-      });
+      lcdDisplay.update(mixer.time, rtTexture, renderer, parameters.aniSpeed);
+      renderer.setSize(aspect.width, aspect.height); //Renderer size
+    } else { 
+      //reset, only in DEBUG mode
+      // mixer.time = 0;
+      // lcdDisplay.reset();
+      // texSun1_2.offset.set(.07, -.1);
+      // texSun1_3.offset.set(-.07, .12);
+      // bandList.forEach(b => {
+      //   b.start();
+      // });
     }
   }
-  lcdDisplay.update(mixer.time, rtTexture, renderer, parameters.aniSpeed);
-
-  renderer.setSize(aspect.width, aspect.height); //Renderer size
+  
   renderer.setRenderTarget(null);
+  renderer.clear();
   composer.render();
   //renderer.render(scene, camera); //draw what the camera inside the scene captured
-  stats.update()
 };
