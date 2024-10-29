@@ -41,7 +41,7 @@ const parameters = {
   p: 3.0,
   ambientLight: 0.75,
   directionLight: 0.75,
-  aniSpeed: 0.03,
+  aniSpeed: 0.02,
   filmPass: !true,
 }
 
@@ -502,12 +502,14 @@ const animate = () => {
 
     if (mixer.time + parameters.aniSpeed < action.getClip().duration) {
       mixer.update(parameters.aniSpeed)
-      texSun1_3.offset.x += parameters.aniSpeed / 150.0;
-      texSun1_3.offset.y -= parameters.aniSpeed / 100.0;
-      texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
-      texSun1_2.offset.y += parameters.aniSpeed / 100.0;
-      // console.log(mixer.time);
+      console.log(mixer.time);
       //phone is rotating, launching first ribbons
+      if (mixer.time < 11) {
+        texSun1_3.offset.x += parameters.aniSpeed / 150.0;
+        texSun1_3.offset.y -= parameters.aniSpeed / 100.0;
+        texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
+        texSun1_2.offset.y += parameters.aniSpeed / 100.0;
+      }
       if (mixer.time > 2.5) {
         bandList.get('Arc006').update(RIBBON_SPEED); //ribbon to the top left
       }
