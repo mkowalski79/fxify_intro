@@ -41,7 +41,7 @@ const parameters = {
   p: 3.0,
   ambientLight: 0.75,
   directionLight: 0.75,
-  aniSpeed: 0.024,
+  aniSpeed: 0.022,
   filmPass: !true,
 }
 
@@ -491,6 +491,8 @@ function resizeWindow(event) {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  aspect.width = innerWidth;
+  aspect.height = innerHeight;
 }
 
 //postproduction effects
