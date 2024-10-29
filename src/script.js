@@ -546,11 +546,7 @@ const animate = () => {
         bandList.get('Arc007').start();
       }
       if (mixer.time > 10.5) {
-        if (mixer.time > 13.0) {
-          bandList.get('Helix001').update(RIBBON_SPEED*3);  //slow down
-        }
-        else
-          bandList.get('Helix001').update(RIBBON_SPEED*6);
+          bandList.get('Helix001').update(RIBBON_SPEED*7);
       }
       if (mixer.time > 3.4) {
         bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
