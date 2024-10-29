@@ -37,11 +37,11 @@ const LCD_ASPECT = .7;
 //global params
 const parameters = {
   fov: 26,
-  c: 0.32,
-  p: 3.5,
+  c: 0.36,
+  p: 3.0,
   ambientLight: 0.75,
   directionLight: 0.75,
-  aniSpeed: 0.035,
+  aniSpeed: 0.03,
   filmPass: !true,
 }
 
@@ -50,7 +50,7 @@ let composer = null;
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
 const gui = new dat.GUI();
-let bandList = []; //list of flying 'ribbons'
+const bandList = new Map(); //list of flying 'ribbons'
 const filmPass = new FilmPass(.7, false);
 
 //---------------------------------Objects/Materials----------------------
@@ -280,8 +280,11 @@ loader.load('model/intro.glb', (object) => {
     model.userData.mixer = mixer;
     // model.visible = false;
 
+    const indices = new Map();
+    model.children.forEach((c, indx) =>indices.set(c.name,indx));
 
-    phone = model.children[1]; //phone object
+
+    phone = model.children[indices.get('phone')]; //phone object
     phone.children[0].material.needsUpdate = true; //LCD display
     const matPhoneCase = new THREE.MeshPhongMaterial({
       color: 0x333333
@@ -306,7 +309,7 @@ loader.load('model/intro.glb', (object) => {
     //lcdGlow.side = THREE.FrontSide;
     //phone.children[0].material = materialGlow;
 
-    const bands = model.children[2]; //bands
+    const bands = model.children[indices.get('Bands')]; //bands
 
     for (let i = 0; i < bands.children.length; i++) {
       const spline = bands.children[i];
@@ -325,24 +328,38 @@ loader.load('model/intro.glb', (object) => {
       scene.add(b2.group);
       b2.start();
       b2.group.visible = false;
-      
-      console.log("start b2");
-      bandList.push(b2);
+      bandList.set(spline.name,b2);
     }
-    bandList[2].group.position.y -= .006;
-    bandList[2].group.position.x -= .005;
-    bandList[2].group.rotation.z = Math.PI / 6;
+    bandList.get('Arc002').group.position.y -= .006;
+    bandList.get('Arc002').group.position.x -= .005;
+    bandList.get('Arc002').group.rotation.z = Math.PI / 6;
 
-    bandList[1].group.position.y += .002;
-    bandList[1].group.position.z += .005;
-    bandList[1].group.rotation.z = Math.PI *.8;
+    bandList.get('Arc003').group.position.y += .002;
+    bandList.get('Arc003').group.position.z += .005;
+    bandList.get('Arc003').group.rotation.z = Math.PI *.8;
 
-    bandList[0].group.position.x -= .003;
-    bandList[0].group.position.y -= .003;
-    bandList[0].group.rotation.z = +Math.PI *.2;
+    bandList.get('Arc004').group.position.x -= .003;
+    bandList.get('Arc004').group.position.y -= .003;
+    bandList.get('Arc004').group.rotation.z = +Math.PI *.2;
+    
+    bandList.get('Arc005').group.position.x += .003;
+    bandList.get('Arc005').group.position.y -= .005;
+    bandList.get('Arc005').group.position.z -= .006;
+    bandList.get('Arc005').group.rotation.z = +Math.PI *.35;
+    
+    bandList.get('Arc006').group.position.x += .001;
+    bandList.get('Arc006').group.position.y -= .006;
+    bandList.get('Arc006').group.position.z -= .006;
+    bandList.get('Arc006').group.rotation.z = + Math.PI *.8;
+
+    bandList.get('Arc007').group.position.x += .001;
+    bandList.get('Arc007').group.position.y -= .001;
+    bandList.get('Arc007').group.position.z -= .004;
+    bandList.get('Arc007').group.rotation.z = + Math.PI*.95;
+    
     
 
-    sun = model.children[5]; //sun
+    sun = model.children[indices.get('sun')]; //sun
     sun.geometry.clearGroups();
     sun.geometry.addGroup(0, Infinity, 0);
     sun.geometry.addGroup(0, Infinity, 1);
@@ -352,19 +369,20 @@ loader.load('model/intro.glb', (object) => {
 
     sun.material.needsUpdate = true;
     sun.material = materials; //matSun.clone();
-    moon1 = model.children[9]; //moon 1
+
+    moon1 = model.children[indices.get('moon1')]; //moon 1
     moon1.material.needsUpdate = true;
     moon1.material = matMoon2.clone();
     moon1.material.map = moon1.material.map.clone();
     moon1.material.map.offset.x = .6; //move so there will be visible orange crest;
 
-    moon2 = model.children[6]; //moon 2
+    moon2 = model.children[indices.get('moon2')]; //moon 2
     moon2.material.needsUpdate = true;
     moon2.material = matMoon2.clone();
     moon2.material.map = moon2.material.map.clone();
     moon2.material.map.offset.x = -.85; //move so there will be visible orange crest;
 
-    moon3 = model.children[8]; //moon 3
+    moon3 = model.children[indices.get('moon3')]; //moon 3
     moon3.material = matMoon.clone();
     moon3.material.map = moon3.material.map.clone();
     moon3.material.needsUpdate = true;
@@ -395,18 +413,25 @@ loader.load('model/intro.glb', (object) => {
       transparent: true,
     });
 
-    sunGlow = model.children[7]; //sunGlow
+    sunGlow = model.children[indices.get('sunGlow')]; //sunGlow
     sunGlow.material = materialGlow;
     sunGlow.scale.multiplyScalar(1.23);
     sunGlow.visible = true;
 
+    // const texSkin = new THREE.TextureLoader().load('./texture/hand_skin.jpg');
+    // texSkin.wrapS =texSkin.wrapT = THREE.RepeatWrappingl
+    // texSkin.repeat.set(1,1);
     const matHand = new THREE.MeshPhongMaterial({
-      color: 0x222222
+      color: 0x222222,
+      color: 0x000000,
+      // map: texSkin,
+      // bumpMap: texSkin,
+      // bumpScale: 0.009,
     });
-    matHand.reflectivity = .4;
-    matHand.shininess = .4;
+    matHand.reflectivity = .9;
+    matHand.shininess = .9;
 
-    hand = model.children[10]; //hand
+    hand = model.children[indices.get('Hand')]; //hand
     hand.material.needsUpdate = true;
     hand.frustumCulled = false;
     hand.material = matHand; //IMPORTANT so that hand is visible in close range
@@ -458,12 +483,13 @@ function initComposer() {
 
   //glowing effect on the flying ribbons
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-  bloomPass.threshold = .8;
-  bloomPass.strength = 1.2;
+  bloomPass.threshold = .9;
+  bloomPass.strength = 2.0;
   bloomPass.radius = .10;
   composer.addPass(bloomPass);
 }
 
+const RIBBON_SPEED = 2;
 
 //------------------------------------------------------------------
 //-----------------------Animate------------------------------------
@@ -473,24 +499,27 @@ const animate = () => {
   //const elapsedTime = clock.getElapsedTime();
 
   if (action !== null) {
+
     if (mixer.time + parameters.aniSpeed < action.getClip().duration) {
       mixer.update(parameters.aniSpeed)
       texSun1_3.offset.x += parameters.aniSpeed / 150.0;
       texSun1_3.offset.y -= parameters.aniSpeed / 100.0;
       texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
       texSun1_2.offset.y += parameters.aniSpeed / 100.0;
-      //b1.group.position.y+=0.0001;
-      if (sun !== null) {
-        //sun.rotation.y = elapsedTime * Math.PI / 100;
-        // sun.material.map.offset.x += .0001;
-        // sun.material.map.offset.y += .0001;
+      // console.log(mixer.time);
+      //phone is rotating, launching first ribbons
+      if (mixer.time > 2.5) {
+        bandList.get('Arc006').update(RIBBON_SPEED); //ribbon to the top left
+      }
+      if (mixer.time > 3.4) {
+        bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
+        bandList.get('Arc007').update(RIBBON_SPEED); //ribbon to the top left
       }
 
-      //phone is rotating, launching first ribbons
       if (mixer.time > .8) {
-        bandList[0].update(2); //ribbon to the top left
-        bandList[1].update(2); //ribbon to the top right
-        bandList[2].update(2); //ribbon to the bottom right
+        bandList.get('Arc004').update(RIBBON_SPEED); //ribbon to the top left
+        bandList.get('Arc003').update(RIBBON_SPEED); //ribbon to the top right
+        bandList.get('Arc002').update(RIBBON_SPEED); //ribbon to the bottom right
       }
     } else { //reset, only in DEBUG mode
       mixer.time = 0;

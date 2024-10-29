@@ -41,7 +41,7 @@ class CandleBar {
     //creates volume of the candle
     const geometry = new THREE.BoxGeometry(1, (this.max - this.min), 1);
     const material = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0xcccccc,
     });
     //Applies material to BoxGeometry
     let cube = new THREE.Mesh(geometry, material);

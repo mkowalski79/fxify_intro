@@ -87,10 +87,10 @@ class LcdDisplay {
         for (let i = 0; i < 3; i++) {
             const geometry = new THREE.BoxGeometry(6 - i * 2, 1, 1);
             const material = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
+                color: 0xcccccc,
             });
             const material2 = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
+                color: 0xcccccc,
             });
 
             let cube = new THREE.Mesh(geometry, material);

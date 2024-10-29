@@ -11,7 +11,7 @@ class Band {
       this.points = points;
       this.group = new THREE.Object3D();
       this.position = new THREE.Vector3();
-      this.segments = 45;
+      this.segments = 30;
       this.init();
     }
   
@@ -55,7 +55,7 @@ class Band {
       if(!steps) 
         steps = 1;
       if(!this.group.visible)
-        setTimeout(()=> {this.group.visible = true}, 300);
+        setTimeout(()=> {this.group.visible = true}, 400);
       this.position = this.points[this.indx];
       
       this.updatePosition();
