@@ -22,6 +22,7 @@
     "raw-loader": "^4.0.2",
     "style-loader": "^2.0.0",
     "three": "^0.139.2",
+    "three-rounded-box": "^0.1.1",
     "three.meshline": "^1.4.0",
     "vite-plugin-string": "^1.2.2",
     "webpack": "^5.24.2",

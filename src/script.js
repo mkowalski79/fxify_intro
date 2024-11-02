@@ -39,7 +39,7 @@ const parameters = {
   fov: 26,
   c: 0.36,
   p: 3.0,
-  ambientLight: 0.75,
+  ambientLight: 0.9,
   directionLight: 0.75,
   aniSpeed: 0.022,
   filmPass: !true,
@@ -62,6 +62,7 @@ let moon1 = null;
 let moon2 = null;
 let moon3 = null;
 let sunGlow = null;
+let phoneGlow = null;
 
 const texSun = new THREE.TextureLoader().load('./texture/sun1.jpg');
 texSun.wrapT = THREE.RepeatWrapping;
@@ -181,11 +182,11 @@ directionalLight.position.set(0, 3.5, -4.5);
 // gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
 // gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
 // gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
-// gui.add(parameters, 'c').min(0.0).max(1.0).step(0.01).name("c").onChange((value) => {
-//   sunGlow.material.uniforms["c"].value = parameters.c;
+// gui.add(parameters, 'c').min(-5.0).max(1.0).step(0.01).name("c").onChange((value) => {
+//   phoneGlow.material.uniforms["c"].value = parameters.c;
 // });
-// gui.add(parameters, 'p').min(0.0).max(6.0).step(0.01).name("p").onChange((value) => {
-//   sunGlow.material.uniforms["p"].value = parameters.p;
+// gui.add(parameters, 'p').min(-5.0).max(6.0).step(0.01).name("p").onChange((value) => {
+//   phoneGlow.material.uniforms["p"].value = parameters.p;
 // });
 // gui.add(camera.rotation, "x").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation X").onChange(function(value) { camera.rotation.x = value; });
 // gui.add(camera.rotation, "y").min(-Math.PI).max(Math.PI).step(Math.PI/100.0).name("rotation y").onChange(function(value) { camera.rotation.y = value; });
@@ -195,7 +196,7 @@ directionalLight.position.set(0, 3.5, -4.5);
 //   camera.fov = value;
 //   camera.updateProjectionMatrix();
 // });
-// gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
+//gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 
 
 // const folder = gui.addFolder('PostProduction');
@@ -209,32 +210,6 @@ directionalLight.position.set(0, 3.5, -4.5);
 //   }
 // });
 // folder.open();
-
-
-function circle() {
-  let theta = 0;
-  let radius = .011;
-
-  const points = [];
-  while (theta <= 360 * 2) {
-    theta += ~~(Math.random() + 5);
-    const deg = theta * Math.PI / 180.0
-    let y = 0;
-    let x = 1.0 * radius * Math.cos(deg) + .0;
-    let z = 1.0 * radius * Math.sin(deg) + .0;
-
-    //radius *= .9998;
-    points.push(new THREE.Vector3(x, y, z));
-  }
-  return points;
-}
-let b1 = new Band(circle(), 0.0002, parameters.aniSpeed * 4);
-b1.group.position.y += .001;
-b1.group.position.z += .0;
-b1.group.rotation.x = Math.PI / 3.5;
-// b1.start();
-scene.add(b1.group);
-
 
 //Renderer
 const canvas = document.querySelector(".draw"); //Select the canvas
@@ -279,34 +254,48 @@ loader.load('model/intro.glb', (object) => {
     model.userData.mixer = mixer;
     // model.visible = false;
 
+
+    const materialGlow = new THREE.ShaderMaterial({
+      uniforms: {
+        "c": {
+          type: "f",
+          value: parameters.c
+        },
+        "p": {
+          type: "f",
+          value: parameters.p
+        },
+        glowColor: {
+          type: "c",
+          value: new THREE.Color(0x004aff)
+        },
+        viewVector: {
+          type: "v3",
+          value: camera.position
+        }
+      },
+      vertexShader: glowVertexShader,
+      fragmentShader: glowFragmentShader,
+      side: THREE.BackSide,
+      blending: THREE.AdditiveBlending,
+      transparent: true,
+    });
+
     const indices = new Map();
     model.children.forEach((c, indx) =>indices.set(c.name,indx));
 
 
-    phone = model.children[indices.get('phone')]; //phone object
+    phone = model.children[indices.get('phone')]//.children[0]; //phone object
     phone.children[0].material.needsUpdate = true; //LCD display
-    const matPhoneCase = new THREE.MeshPhongMaterial({
-      color: 0x333333
-    });
-    matPhoneCase.reflectivity = .4;
-    matPhoneCase.shininess = .9;
+    const matPhoneCase = new THREE.MeshPhongMaterial({  color: 0x888888, });
 
-    const matLCD = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+    const matLCD = new THREE.MeshLambertMaterial({
+      color: 0xdddddd,
       map: rtTexture.texture
     });
-    const matLCD1 = new THREE.MeshPhongMaterial({
-      color: 0x404040
-    });
-    matLCD.reflectivity = .1;
-    matLCD.shininess = .1;
-
-    phone.children[1].material.needsUpdate = true; //phone case
-    phone.children[0].material = matPhoneCase;
-    phone.children[1].material = matLCD;
-    const lcdGlow = matLCD1;
-    //lcdGlow.side = THREE.FrontSide;
-    //phone.children[0].material = materialGlow;
+    matLCD.map.wrapS = matLCD.map.wrapT = THREE.WrapAroundEnding;
+    matLCD.map.repeat.set(1,-1);
+  
 
     const bands = model.children[indices.get('Group001')]; //bands
 
@@ -320,7 +309,7 @@ loader.load('model/intro.glb', (object) => {
       for (let i = 0; i < ptCout - 9; i++) {
         points.push(new THREE.Vector3(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]));
       }
-      const b2 = new Band(points, 0.00045);
+      const b2 = new Band(points, 0.0002);
       //  b2.group.position.y -= .01;
       // b2.group.position.z += .01;
       //b2.group.rotation.x = Math.PI/2;
@@ -361,24 +350,24 @@ loader.load('model/intro.glb', (object) => {
      bandList.get('Arc008').group.rotation.z = + Math.PI*.15;
      bandList.get('Arc008').group.position.x -= .0026;
      bandList.get('Arc008').group.position.y -= .0022;
-     bandList.get('Arc008').delay = 0;
+     bandList.get('Arc008').delay = 410;
      bandList.get('Arc009').group.rotation.z = + Math.PI *.85;
      bandList.get('Arc009').group.position.x += .0026;
      bandList.get('Arc009').group.position.y -= .0022;
-     bandList.get('Arc009').delay = 0;
+     bandList.get('Arc009').delay = 410;
      bandList.get('Arc010').group.rotation.z = + Math.PI*1.15;
      bandList.get('Arc010').group.position.x += .0026;
      bandList.get('Arc010').group.position.y -= .001;
-     bandList.get('Arc010').delay = 0;
+     bandList.get('Arc010').delay = 410;
 
 
-    bandList.get('Helix001').size =  0.00045/3;
+    bandList.get('Helix001').size =  0.00030/3;
     bandList.get('Helix001').init();
     // bandList.get('Helix001').group.rotation.x =  -Math.PI/2.0;
     bandList.get('Helix001').group.rotation.y =  Math.PI;
     //  bandList.get('Helix001').group.rotation.z =  Math.PI/1.0;
-     bandList.get('Helix001').group.position.x += .0005;
-     bandList.get('Helix001').group.position.y -= .0015;
+     bandList.get('Helix001').group.position.x += .0008;
+     bandList.get('Helix001').group.position.y -= .0013;
      bandList.get('Helix001').group.position.z += .022;
      bandList.get('Helix001').delay = 0;
     
@@ -412,7 +401,13 @@ loader.load('model/intro.glb', (object) => {
     moon3.material.map = moon3.material.map.clone();
     moon3.material.needsUpdate = true;
 
-    const materialGlow = new THREE.ShaderMaterial({
+
+    phone.children[0].material.needsUpdate = true; //phone case
+    phone.children[0].material = matPhoneCase;
+    
+    phone.children[1].material = matLCD;
+
+    const matGlowPhone = new THREE.ShaderMaterial({
       uniforms: {
         "c": {
           type: "f",
@@ -424,7 +419,7 @@ loader.load('model/intro.glb', (object) => {
         },
         glowColor: {
           type: "c",
-          value: new THREE.Color(0x004aff)
+          value: new THREE.Color(0xffffff)
         },
         viewVector: {
           type: "v3",
@@ -436,12 +431,23 @@ loader.load('model/intro.glb', (object) => {
       side: THREE.BackSide,
       blending: THREE.AdditiveBlending,
       transparent: true,
+      opacity: 0.1,
     });
+    // phoneGlow = phone.children[0].children[0];//model.children[indices.get('phoneGlow')];
+    phoneGlow = model.children[indices.get('phoneGlow')];
+    phoneGlow.material = matGlowPhone.clone();
+    //phoneGlow.scale.multiplyScalar(1.03);
+    // phoneGlow.visible = false;
+    // const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+    // pointLight.position.set(phoneGlow.position);
+    // phoneGlow.add(pointLight);
+
 
     sunGlow = model.children[indices.get('sunGlow')]; //sunGlow
     sunGlow.material = materialGlow;
     sunGlow.scale.multiplyScalar(1.23);
     sunGlow.visible = true;
+    
 
     // const texSkin = new THREE.TextureLoader().load('./texture/hand_skin.jpg');
     // texSkin.wrapS =texSkin.wrapT = THREE.RepeatWrappingl
@@ -508,8 +514,8 @@ function initComposer() {
   //glowing effect on the flying ribbons
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
   bloomPass.threshold = .9;
-  bloomPass.strength = 2.0;
-  bloomPass.radius = .15;
+  bloomPass.strength = 2.5;
+  bloomPass.radius = .2;
   composer.addPass(bloomPass);
 }
 
@@ -539,15 +545,19 @@ const animate = () => {
         texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
         texSun1_2.offset.y += parameters.aniSpeed / 100.0;
       }
-      if (mixer.time > 9.9) {
+      if (mixer.time > 7.9) {
+        // phoneGlow.visible = true;
+      }
+      if (mixer.time > 9.8) {
         bandList.get('Arc008').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc009').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').start();
       }
       if (mixer.time > 10.5) {
-          bandList.get('Helix001').update(RIBBON_SPEED*7);
+        bandList.get('Helix001').update(RIBBON_SPEED*6);
       }
+
       if (mixer.time > 3.4) {
         bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').update(RIBBON_SPEED); //ribbon to the top left
