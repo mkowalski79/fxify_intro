@@ -252,7 +252,7 @@ loader.load('model/intro.glb', (object) => {
     // Inicjalizacja animacji
     mixer = new THREE.AnimationMixer(model);
     model.userData.mixer = mixer;
-    // model.visible = false;
+    model.visible = false;
 
 
     const materialGlow = new THREE.ShaderMaterial({
@@ -350,15 +350,12 @@ loader.load('model/intro.glb', (object) => {
      bandList.get('Arc008').group.rotation.z = + Math.PI*.15;
      bandList.get('Arc008').group.position.x -= .0026;
      bandList.get('Arc008').group.position.y -= .0022;
-     bandList.get('Arc008').delay = 410;
      bandList.get('Arc009').group.rotation.z = + Math.PI *.85;
      bandList.get('Arc009').group.position.x += .0026;
      bandList.get('Arc009').group.position.y -= .0022;
-     bandList.get('Arc009').delay = 410;
      bandList.get('Arc010').group.rotation.z = + Math.PI*1.15;
      bandList.get('Arc010').group.position.x += .0026;
      bandList.get('Arc010').group.position.y -= .001;
-     bandList.get('Arc010').delay = 410;
 
 
     bandList.get('Helix001').size =  0.00030/3;

@@ -7,12 +7,12 @@ const BAND_SIZE = .005;
 
 class Band {
     constructor(points, size) {
+      this.segments = 30;
       this.size = size;
-      this.points = points;
+      const pts = Array(this.segments).fill(points[0]);
+      this.points = pts.concat(points);
       this.group = new THREE.Object3D();
       this.position = new THREE.Vector3();
-      this.delay = 400;
-      this.segments = 30;
       this.init();
     }
   
@@ -38,6 +38,11 @@ class Band {
   
     start() {
       this.indx = 0;
+      let c = this.segments;
+      while(--c >0)   {
+        this.position = this.points[this.indx++];
+        this.updatePosition();
+      }
       this.group.visible = false;
     }
   
@@ -56,7 +61,7 @@ class Band {
       if(!steps) 
         steps = 1;
       if(!this.group.visible)
-        setTimeout(()=> {this.group.visible = true}, this.delay);
+        this.group.visible = true;
       this.position = this.points[this.indx];
       
       this.updatePosition();
