@@ -542,25 +542,22 @@ const animate = () => {
         texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
         texSun1_2.offset.y += parameters.aniSpeed / 100.0;
       }
-      if (mixer.time > 7.9) {
-        // phoneGlow.visible = true;
-      }
-      if (mixer.time > 9.8) {
+      if (mixer.time > 9.4) {
         bandList.get('Arc008').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc009').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').start();
       }
-      if (mixer.time > 10.5) {
+      if (mixer.time > 10.1) {
         bandList.get('Helix001').update(RIBBON_SPEED*6);
       }
 
-      if (mixer.time > 3.4) {
+      if (mixer.time > 3.0) {
         bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').update(RIBBON_SPEED); //ribbon to the top left
       }
       
-      if (mixer.time > .8) {
+      if (mixer.time > .4) {
         bandList.get('Arc004').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc003').update(RIBBON_SPEED); //ribbon to the top right
         bandList.get('Arc002').update(RIBBON_SPEED); //ribbon to the bottom right
