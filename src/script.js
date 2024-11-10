@@ -49,7 +49,7 @@ const parameters = {
 let composer = null;
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
-const gui = new dat.GUI();
+// const gui = new dat.GUI();
 
 const bandList = new Map(); //list of flying 'ribbons'
 const filmPass = new FilmPass(.7, false);
@@ -168,10 +168,10 @@ directionalLight.position.set(0, 3.5, -4.5);
 
 //------------------------------------GUI---------------------------------------------
 // gui.add(ambientLight, "intensity").min(0).max(1).step(0.01).name("Ambient One");
-gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Two");
-gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
-gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
-gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
+// gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Two");
+// gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
+// gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
+// gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
 // gui.add(parameters, 'c').min(-5.0).max(1.0).step(0.01).name("c").onChange((value) => {
 //   phoneGlow.material.uniforms["c"].value = parameters.c;
 // });
@@ -186,7 +186,7 @@ gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
 //   camera.fov = value;
 //   camera.updateProjectionMatrix();
 // });
-gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
+// gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 
 
 // const folder = gui.addFolder('PostProduction');
