@@ -252,7 +252,7 @@ loader.load('model/intro.glb', (object) => {
     // Inicjalizacja animacji
     mixer = new THREE.AnimationMixer(model);
     model.userData.mixer = mixer;
-    model.visible = false;
+    // model.visible = false;
 
 
     const materialGlow = new THREE.ShaderMaterial({
@@ -309,7 +309,7 @@ loader.load('model/intro.glb', (object) => {
       for (let i = 0; i < ptCout - 9; i++) {
         points.push(new THREE.Vector3(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]));
       }
-      const b2 = new Band(points, 0.0002);
+      const b2 = new Band(points, 0.00035);
       //  b2.group.position.y -= .01;
       // b2.group.position.z += .01;
       //b2.group.rotation.x = Math.PI/2;
@@ -364,7 +364,7 @@ loader.load('model/intro.glb', (object) => {
     bandList.get('Helix001').group.rotation.y =  Math.PI;
     //  bandList.get('Helix001').group.rotation.z =  Math.PI/1.0;
      bandList.get('Helix001').group.position.x += .0008;
-     bandList.get('Helix001').group.position.y -= .0013;
+     bandList.get('Helix001').group.position.y += .000;
      bandList.get('Helix001').group.position.z += .022;
      bandList.get('Helix001').delay = 0;
     
@@ -508,11 +508,11 @@ function initComposer() {
   filmPass.enabled = parameters.filmPass;
 
 
-  //glowing effect on the flying ribbons
+  //glowing effect on the flying ribbons and LCD Screen
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-  bloomPass.threshold = .9;
-  bloomPass.strength = 2.5;
-  bloomPass.radius = .2;
+  bloomPass.threshold = .65;
+  bloomPass.strength = 1.5;
+  bloomPass.radius = .01;
   composer.addPass(bloomPass);
 }
 
@@ -548,8 +548,8 @@ const animate = () => {
         bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').start();
       }
-      if (mixer.time > 10.1) {
-        bandList.get('Helix001').update(RIBBON_SPEED*6);
+      if (mixer.time > 9.5) {
+        bandList.get('Helix001').update(RIBBON_SPEED*4);
       }
 
       if (mixer.time > 3.0) {

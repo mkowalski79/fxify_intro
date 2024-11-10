@@ -7,7 +7,7 @@ const BAND_SIZE = .005;
 
 class Band {
     constructor(points, size) {
-      this.segments = 30;
+      this.segments = 40;
       this.size = size;
       const pts = Array(this.segments).fill(points[0]);
       this.points = pts.concat(points);
@@ -39,7 +39,7 @@ class Band {
     start() {
       this.indx = 0;
       let c = this.segments;
-      while(--c >=0)   {
+      while(--c >= 0)   {
         this.position = this.points[this.indx++];
         this.updatePosition();
       }
