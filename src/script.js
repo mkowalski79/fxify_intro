@@ -40,7 +40,7 @@ const parameters = {
   c: 0.36,
   p: 3.0,
   ambientLight: 0.9,
-  directionLight: 0.75,
+  directionLight: 0.36,
   aniSpeed: 0.022,
   filmPass: !true,
 }
@@ -49,7 +49,8 @@ const parameters = {
 let composer = null;
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
-// const gui = new dat.GUI();
+const gui = new dat.GUI();
+
 const bandList = new Map(); //list of flying 'ribbons'
 const filmPass = new FilmPass(.7, false);
 
@@ -115,12 +116,7 @@ const matSun = new THREE.MeshLambertMaterial({
   map: texSun,
   emissiveMap: texSunMain,
   emissiveIntensity: .1,
-  // bumpMap: texSunBump,
-  side: THREE.DoubleSide,
-  //transparent: true,
-  //opacity: 1.0,
-  //displacementMap: new THREE.TextureLoader().load('./texture/displacementMap.jpg'),
-  //displacementScale: .1
+  side: THREE.FrontSide,
 });
 
 const matSun1 = new THREE.MeshStandardMaterial({
@@ -130,9 +126,6 @@ const matSun1 = new THREE.MeshStandardMaterial({
   side: THREE.FrontSide,
   opacity: .65,
   bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
-  // opacity: .3,
-  //displacementMap: new THREE.TextureLoader().load('./texture/displacementMap.jpg'),
-  //displacementScale: .1
 });
 
 const matSun2 = new THREE.MeshStandardMaterial({
@@ -142,9 +135,6 @@ const matSun2 = new THREE.MeshStandardMaterial({
   side: THREE.FrontSide,
   opacity: .65,
   bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
-
-  //displacementMap: new THREE.TextureLoader().load('./texture/displacementMap.jpg'),
-  //displacementScale: .1
 });
 
 const matMoon2 = new THREE.MeshStandardMaterial({
@@ -178,10 +168,10 @@ directionalLight.position.set(0, 3.5, -4.5);
 
 //------------------------------------GUI---------------------------------------------
 // gui.add(ambientLight, "intensity").min(0).max(1).step(0.01).name("Ambient One");
-// gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Two");
-// gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
-// gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
-// gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
+gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Two");
+gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
+gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
+gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
 // gui.add(parameters, 'c').min(-5.0).max(1.0).step(0.01).name("c").onChange((value) => {
 //   phoneGlow.material.uniforms["c"].value = parameters.c;
 // });
@@ -196,7 +186,7 @@ directionalLight.position.set(0, 3.5, -4.5);
 //   camera.fov = value;
 //   camera.updateProjectionMatrix();
 // });
-//gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
+gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 
 
 // const folder = gui.addFolder('PostProduction');
@@ -364,10 +354,8 @@ loader.load('model/intro.glb', (object) => {
     bandList.get('Helix001').group.rotation.y =  Math.PI;
     //  bandList.get('Helix001').group.rotation.z =  Math.PI/1.0;
      bandList.get('Helix001').group.position.x += .0008;
-     bandList.get('Helix001').group.position.y += .000;
-     bandList.get('Helix001').group.position.z += .022;
-     bandList.get('Helix001').delay = 0;
-    
+     bandList.get('Helix001').group.position.y -= .0002;
+     bandList.get('Helix001').group.position.z += .024;
     
 
     sun = model.children[indices.get('sun')]; //sun
@@ -510,9 +498,9 @@ function initComposer() {
 
   //glowing effect on the flying ribbons and LCD Screen
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-  bloomPass.threshold = .65;
+  bloomPass.threshold = .67;
   bloomPass.strength = 1.5;
-  bloomPass.radius = .01;
+  bloomPass.radius = .2;
   composer.addPass(bloomPass);
 }
 
@@ -542,14 +530,12 @@ const animate = () => {
         texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
         texSun1_2.offset.y += parameters.aniSpeed / 100.0;
       }
-      if (mixer.time > 9.4) {
+      if (mixer.time > 10.0) {
         bandList.get('Arc008').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc009').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').start();
-      }
-      if (mixer.time > 9.5) {
-        bandList.get('Helix001').update(RIBBON_SPEED*4);
+        bandList.get('Helix001').update(RIBBON_SPEED*5);
       }
 
       if (mixer.time > 3.0) {

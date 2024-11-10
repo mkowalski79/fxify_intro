@@ -90,7 +90,7 @@ class LcdDisplay {
                 color: 0xffffff,
             });
             const material2 = new THREE.MeshBasicMaterial({
-                color: 0xffffff,
+                color: 0xdddddd,
             });
 
             let cube = new THREE.Mesh(geometry, material);
