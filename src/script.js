@@ -349,13 +349,15 @@ loader.load('model/intro.glb', (object) => {
 
 
     bandList.get('Helix001').size =  0.00030/3;
+    bandList.get('Helix001').segments = 40;
     bandList.get('Helix001').init();
     // bandList.get('Helix001').group.rotation.x =  -Math.PI/2.0;
-    bandList.get('Helix001').group.rotation.y =  Math.PI;
-    //  bandList.get('Helix001').group.rotation.z =  Math.PI/1.0;
-     bandList.get('Helix001').group.position.x += .0008;
-     bandList.get('Helix001').group.position.y -= .0002;
-     bandList.get('Helix001').group.position.z += .024;
+    bandList.get('Helix001').group.rotation.y =  Math.PI/2;
+    bandList.get('Helix001').group.rotation.z =  Math.PI/1.0;
+    bandList.get('Helix001').group.position.x += .0005;
+    bandList.get('Helix001').group.position.y -= .0014;
+    bandList.get('Helix001').group.position.z += .024;
+    bandList.get('Helix001').start();
     
 
     sun = model.children[indices.get('sun')]; //sun
@@ -514,13 +516,10 @@ const animate = () => {
   
   if (action !== null) {
     window.requestAnimationFrame(animate);
-
-    if (mixer.time + parameters.aniSpeed*2 < action.getClip().duration) {
-      if (mixer.time > 12.5) 
-        mixer.update(parameters.aniSpeed*2)
-      else
-        mixer.update(parameters.aniSpeed)
-
+    
+    if (mixer.time + parameters.aniSpeed < action.getClip().duration) {
+      mixer.update(parameters.aniSpeed)
+      
       // console.log(mixer.time);
       //phone is rotating, launching first ribbons
       
@@ -535,8 +534,11 @@ const animate = () => {
         bandList.get('Arc009').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
         bandList.get('Arc007').start();
-        bandList.get('Helix001').update(RIBBON_SPEED*5);
+        bandList.get('Helix001').update(RIBBON_SPEED*3);
       }
+      // if (mixer.time > 9.0) {
+      //   bandList.get('Helix001').update(RIBBON_SPEED*2);
+      // }
 
       if (mixer.time > 3.0) {
         bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
@@ -557,7 +559,7 @@ const animate = () => {
       // texSun1_2.offset.set(.07, -.1);
       // texSun1_3.offset.set(-.07, .12);
       // bandList.forEach(b => {
-      //   b.start();
+        //   b.start();
       // });
     }
   }
