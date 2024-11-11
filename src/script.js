@@ -536,7 +536,7 @@ const animate = () => {
         bandList.get('Arc007').start();
         bandList.get('Helix001').update(RIBBON_SPEED*3);
       }
-      // if (mixer.time > 9.0) {
+      // if (mixer.time > 10.5) {
       //   bandList.get('Helix001').update(RIBBON_SPEED*2);
       // }
 
