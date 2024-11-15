@@ -39,8 +39,8 @@ const parameters = {
   fov: 26,
   c: 0.36,
   p: 3.0,
-  ambientLight: 0.9,
-  directionLight: 0.36,
+  ambientLight: 1.0,
+  directionLight: 0.15,
   aniSpeed: 0.022,
   filmPass: !true,
 }
@@ -49,7 +49,7 @@ const parameters = {
 let composer = null;
 const scene = new THREE.Scene();
 const clock = new THREE.Clock();
-// const gui = new dat.GUI();
+const gui = new dat.GUI();
 
 const bandList = new Map(); //list of flying 'ribbons'
 const filmPass = new FilmPass(.7, false);
@@ -65,21 +65,18 @@ let moon3 = null;
 let sunGlow = null;
 let phoneGlow = null;
 
-const texSun = new THREE.TextureLoader().load('./texture/sun1.jpg');
-texSun.wrapT = THREE.RepeatWrapping;
-texSun.wrapS = THREE.RepeatWrapping;
-texSun.repeat.set(3, 1);
-
-
-const texMoon2 = new THREE.TextureLoader().load('./texture/mooncrest1.jpg');
-texMoon2.wrapT = THREE.RepeatWrapping;
-texMoon2.wrapS = THREE.RepeatWrapping;
-
 
 const texMoon = new THREE.TextureLoader().load('./texture/moon.jpg');
 texMoon.wrapT = THREE.RepeatWrapping;
 texMoon.wrapS = THREE.RepeatWrapping;
 
+const texMoon2 = new THREE.TextureLoader().load('./texture/moon2.jpg');
+texMoon2.wrapT = THREE.RepeatWrapping;
+texMoon2.wrapS = THREE.RepeatWrapping;
+
+const texMoon3 = new THREE.TextureLoader().load('./texture/moon3.jpg');
+texMoon3.wrapT = THREE.RepeatWrapping;
+texMoon3.wrapS = THREE.RepeatWrapping;
 
 const texSunBump = new THREE.TextureLoader().load('./texture/sun1_bump.png');
 texSunBump.wrapT = THREE.RepeatWrapping;
@@ -87,7 +84,7 @@ texSunBump.wrapS = THREE.RepeatWrapping;
 texSunBump.repeat.set(3, 1);
 
 
-const texSunMain = new THREE.TextureLoader().load('./texture/moon.jpg');
+const texSunMain = new THREE.TextureLoader().load('./texture/sun1.jpg');
 texSunMain.wrapT = THREE.RepeatWrapping;
 texSunMain.wrapS = THREE.RepeatWrapping;
 
@@ -96,8 +93,7 @@ texSun1_2.wrapT = THREE.RepeatWrapping;
 texSun1_2.wrapS = THREE.RepeatWrapping;
 texSun1_2.offset.set(.07, -.1);
 
-
-const texSun1_3 = new THREE.TextureLoader().load('./texture/sun1_2.png');
+const texSun1_3 = new THREE.TextureLoader().load('./texture/sun1_3.png');
 texSun1_3.wrapT = THREE.RepeatWrapping;
 texSun1_3.wrapS = THREE.RepeatWrapping;
 texSun1_3.offset.set(-.07, .12);
@@ -113,18 +109,17 @@ const aspect = {
 
 const matSun = new THREE.MeshLambertMaterial({
   color: 0xFFFFFF,
-  map: texSun,
-  emissiveMap: texSunMain,
-  emissiveIntensity: .1,
+  map: texSunMain,
   side: THREE.FrontSide,
+  bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
 });
 
 const matSun1 = new THREE.MeshStandardMaterial({
   color: 0xFFFFFF,
   map: texSun1_2,
   transparent: true,
+  opacity: 1.0,
   side: THREE.FrontSide,
-  opacity: .65,
   bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
 });
 
@@ -133,8 +128,16 @@ const matSun2 = new THREE.MeshStandardMaterial({
   map: texSun1_3,
   transparent: true,
   side: THREE.FrontSide,
-  opacity: .65,
+  opacity: 1.0,
   bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
+});
+
+const matMoon3 = new THREE.MeshStandardMaterial({
+  color: 0xAAAAFF,
+  map: texMoon3.clone(),
+  transparent: false,
+  side: THREE.FrontSide,
+  //opacity: .65,
 });
 
 const matMoon2 = new THREE.MeshStandardMaterial({
@@ -145,11 +148,13 @@ const matMoon2 = new THREE.MeshStandardMaterial({
   transparent: false,
   side: THREE.FrontSide,
   //opacity: .65,
-
 });
+
 const matMoon = new THREE.MeshStandardMaterial({
   color: 0xAAAAFF,
   map: texMoon.clone(),
+  //bumpMap: new THREE.TextureLoader().load('./texture/sun2_bump.jpg'),
+  //bumpScale: 0.00001,
   transparent: false,
   side: THREE.FrontSide,
   //opacity: .65,
@@ -164,14 +169,14 @@ let rtTexture = new THREE.WebGLRenderTarget(512, 512);
 const ambientLight = new THREE.AmbientLight("#ffffff", parameters.ambientLight);
 // -------------------------------------2)DirectionalLight-------------------------------------
 const directionalLight = new THREE.DirectionalLight("#ffffff", parameters.directionLight);
-directionalLight.position.set(0, 3.5, -4.5);
+directionalLight.position.set(0, 3.5, -6.5);
 
 //------------------------------------GUI---------------------------------------------
-// gui.add(ambientLight, "intensity").min(0).max(1).step(0.01).name("Ambient One");
-// gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Two");
-// gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
-// gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
-// gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
+gui.add(ambientLight, "intensity").min(0).max(1).step(0.01).name("Ambient One");
+gui.add(directionalLight, "intensity").min(0).max(1).step(0.01).name("Directional Two");
+gui.add(directionalLight.position, "x").min(-8).max(8).step(0.02).name("X Dir");
+gui.add(directionalLight.position, "y").min(-8).max(8).step(0.02).name("Y Dir");
+gui.add(directionalLight.position, "z").min(-8).max(8).step(0.02).name("Z Dir");
 // gui.add(parameters, 'c').min(-5.0).max(1.0).step(0.01).name("c").onChange((value) => {
 //   phoneGlow.material.uniforms["c"].value = parameters.c;
 // });
@@ -186,7 +191,7 @@ directionalLight.position.set(0, 3.5, -4.5);
 //   camera.fov = value;
 //   camera.updateProjectionMatrix();
 // });
-// gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
+gui.add(parameters, "aniSpeed").min(0).max(0.1).step(0.005).name("speed");
 
 
 // const folder = gui.addFolder('PostProduction');
@@ -214,7 +219,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.clearColor = new THREE.Color('#000000');
 //scene.background = new THREE.Color( 0xff0000 );
 
-texSun.anisotropy = renderer.capabilities.getMaxAnisotropy();
+texSunMain.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
 
 scene.add(ambientLight);
@@ -277,7 +282,7 @@ loader.load('model/intro.glb', (object) => {
 
     phone = model.children[indices.get('phone')]//.children[0]; //phone object
     phone.children[0].material.needsUpdate = true; //LCD display
-    const matPhoneCase = new THREE.MeshPhongMaterial({  color: 0x888888, });
+    const matPhoneCase = new THREE.MeshPhongMaterial({  color: 0xeeeeee, });
 
     const matLCD = new THREE.MeshLambertMaterial({
       color: 0xdddddd,
@@ -384,7 +389,7 @@ loader.load('model/intro.glb', (object) => {
     moon2.material.map.offset.x = -.85; //move so there will be visible orange crest;
 
     moon3 = model.children[indices.get('moon3')]; //moon 3
-    moon3.material = matMoon.clone();
+    moon3.material = matMoon3.clone();
     moon3.material.map = moon3.material.map.clone();
     moon3.material.needsUpdate = true;
 
@@ -454,6 +459,10 @@ loader.load('model/intro.glb', (object) => {
     hand.frustumCulled = false;
     hand.material = matHand; //IMPORTANT so that hand is visible in close range
 
+    hand.visible = false;
+    phone.visible = false;
+    phoneGlow.visible = false;
+    
     if (object.animations.length > 0) {
       action = mixer.clipAction(object.animations[0]);
       action.setLoop( THREE.LoopOnce );
@@ -500,8 +509,8 @@ function initComposer() {
 
   //glowing effect on the flying ribbons and LCD Screen
   const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
-  bloomPass.threshold = .67;
-  bloomPass.strength = 1.5;
+  bloomPass.threshold = .99;
+  bloomPass.strength = 3.0;
   bloomPass.radius = .2;
   composer.addPass(bloomPass);
 }
@@ -529,27 +538,23 @@ const animate = () => {
         texSun1_2.offset.x -= parameters.aniSpeed / 150.0;
         texSun1_2.offset.y += parameters.aniSpeed / 100.0;
       }
-      if (mixer.time > 10.0) {
-        bandList.get('Arc008').update(RIBBON_SPEED); //ribbon to the top left
-        bandList.get('Arc009').update(RIBBON_SPEED); //ribbon to the top left
-        bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
-        bandList.get('Arc007').start();
-        bandList.get('Helix001').update(RIBBON_SPEED*3);
-      }
-      // if (mixer.time > 10.5) {
-      //   bandList.get('Helix001').update(RIBBON_SPEED*2);
+      // if (mixer.time > 10.0) {
+      //   bandList.get('Arc008').update(RIBBON_SPEED); //ribbon to the top left
+      //   bandList.get('Arc009').update(RIBBON_SPEED); //ribbon to the top left
+      //   bandList.get('Arc010').update(RIBBON_SPEED); //ribbon to the top left
+      //   bandList.get('Arc007').start();
+      //   bandList.get('Helix001').update(RIBBON_SPEED*3);
       // }
-
-      if (mixer.time > 3.0) {
-        bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
-        bandList.get('Arc007').update(RIBBON_SPEED); //ribbon to the top left
-      }
+      // if (mixer.time > 3.0) {
+      //   bandList.get('Arc005').update(RIBBON_SPEED); //ribbon to the top left
+      //   bandList.get('Arc007').update(RIBBON_SPEED); //ribbon to the top left
+      // }
       
-      if (mixer.time > .4) {
-        bandList.get('Arc004').update(RIBBON_SPEED); //ribbon to the top left
-        bandList.get('Arc003').update(RIBBON_SPEED); //ribbon to the top right
-        bandList.get('Arc002').update(RIBBON_SPEED); //ribbon to the bottom right
-      }
+      // if (mixer.time > .4) {
+      //   bandList.get('Arc004').update(RIBBON_SPEED); //ribbon to the top left
+      //   bandList.get('Arc003').update(RIBBON_SPEED); //ribbon to the top right
+      //   bandList.get('Arc002').update(RIBBON_SPEED); //ribbon to the bottom right
+      // }
       lcdDisplay.update(mixer.time, rtTexture, renderer, parameters.aniSpeed);
       renderer.setSize(aspect.width, aspect.height); //Renderer size
     } else { 
